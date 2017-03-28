@@ -369,6 +369,11 @@ if spice_gtk_has_gtk
         message('@0@ @1@: @2@ -> @3@'.format(prog_scanner, output_type, xml_path, output_file))
       endforeach
     endforeach
+
+    spice_client_gtk_sources += [
+      'wayland-extensions.c',
+      'wayland-extensions.h',
+    ]
   endif
 
   #
