@@ -7,7 +7,6 @@ ignore_headers = [
   'coroutine.h',
   'decode.h',
   'desktop-integration.h',
-  'display',
   'gio-coroutine.h',
   'giopipe.h',
   'smartcard-manager-priv.h',
