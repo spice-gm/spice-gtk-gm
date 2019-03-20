@@ -577,8 +577,7 @@ static void clipboard_get_targets(GtkClipboard *clipboard,
     g_return_if_fail(selection != -1);
 
     if (s->clip_grabbed[selection]) {
-        SPICE_DEBUG("Clipboard is already grabbed, ignoring %d atoms", n_atoms);
-        return;
+        SPICE_DEBUG("Clipboard is already grabbed, re-grab: %d atoms", n_atoms);
     }
 
     /* Set all Atoms that matches our current protocol implementation */
@@ -660,18 +659,14 @@ static void clipboard_owner_change(GtkClipboard        *clipboard,
         return;
     }
 
-    /* In case we sent a grab to the agent, we need to release it now as
-     * previous clipboard data should not be reachable anymore */
-    if (s->clip_grabbed[selection]) {
-        s->clip_grabbed[selection] = FALSE;
-        if (spice_main_channel_agent_test_capability(s->main, VD_AGENT_CAP_CLIPBOARD_BY_DEMAND)) {
-            spice_main_channel_clipboard_selection_release(s->main, selection);
-        }
-    }
-
-    /* We are mostly interested when owner has changed in which case
-     * we would like to let agent know about new clipboard data. */
     if (event->reason != GDK_OWNER_CHANGE_NEW_OWNER) {
+        if (s->clip_grabbed[selection]) {
+            /* grab was sent to the agent, so release it */
+            s->clip_grabbed[selection] = FALSE;
+            if (spice_main_channel_agent_test_capability(s->main, VD_AGENT_CAP_CLIPBOARD_BY_DEMAND)) {
+                spice_main_channel_clipboard_selection_release(s->main, selection);
+            }
+        }
         s->clip_hasdata[selection] = FALSE;
         return;
     }
