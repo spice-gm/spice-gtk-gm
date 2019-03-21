@@ -59,6 +59,7 @@ struct _SpiceGtkSessionPrivate {
     gboolean                clip_hasdata[CLIPBOARD_LAST];
     gboolean                clip_grabbed[CLIPBOARD_LAST];
     gboolean                clipboard_by_guest[CLIPBOARD_LAST];
+    guint                   clipboard_release_delay[CLIPBOARD_LAST];
     /* auto-usbredir related */
     gboolean                auto_usbredir_enable;
     int                     auto_usbredir_reqs;
@@ -95,6 +96,7 @@ struct _SpiceGtkSessionPrivate {
 
 /* ------------------------------------------------------------------ */
 /* Prototypes for private functions */
+static void clipboard_release(SpiceGtkSession *self, guint selection);
 static void clipboard_owner_change(GtkClipboard *clipboard,
                                    GdkEventOwnerChange *event,
                                    gpointer user_data);
@@ -255,6 +257,24 @@ static void spice_gtk_session_dispose(GObject *gobject)
         G_OBJECT_CLASS(spice_gtk_session_parent_class)->dispose(gobject);
 }
 
+static void clipboard_release_delay_remove(SpiceGtkSession *self, guint selection,
+                                           gboolean release_if_delayed)
+{
+    SpiceGtkSessionPrivate *s = self->priv;
+
+    if (!s->clipboard_release_delay[selection]) {
+        return;
+    }
+
+    if (release_if_delayed) {
+        SPICE_DEBUG("delayed clipboard release, sel:%u", selection);
+        clipboard_release(self, selection);
+    }
+
+    g_source_remove(s->clipboard_release_delay[selection]);
+    s->clipboard_release_delay[selection] = 0;
+}
+
 static void spice_gtk_session_finalize(GObject *gobject)
 {
     SpiceGtkSession *self = SPICE_GTK_SESSION(gobject);
@@ -264,6 +284,7 @@ static void spice_gtk_session_finalize(GObject *gobject)
     /* release stuff */
     for (i = 0; i < CLIPBOARD_LAST; ++i) {
         g_clear_pointer(&s->clip_targets[i], g_free);
+        clipboard_release_delay_remove(self, i, true);
     }
 
     /* Chain up to the parent class */
@@ -762,6 +783,11 @@ static void clipboard_get(GtkClipboard *clipboard,
     g_return_if_fail(info < SPICE_N_ELEMENTS(atom2agent));
     g_return_if_fail(s->main != NULL);
 
+    if (s->clipboard_release_delay[selection]) {
+        SPICE_DEBUG("not requesting data from guest during delayed release");
+        return;
+    }
+
     ri.selection_data = selection_data;
     ri.info = info;
     ri.loop = g_main_loop_new(NULL, FALSE);
@@ -822,6 +848,8 @@ static gboolean clipboard_grab(SpiceMainChannel *main, guint selection,
     GtkClipboard* cb;
     int m, n;
     int num_targets = 0;
+
+    clipboard_release_delay_remove(self, selection, false);
 
     cb = get_clipboard_from_selection(s, selection);
     g_return_val_if_fail(cb != NULL, FALSE);
@@ -1052,17 +1080,12 @@ static gboolean clipboard_request(SpiceMainChannel *main, guint selection,
     return TRUE;
 }
 
-static void clipboard_release(SpiceMainChannel *main, guint selection,
-                              gpointer user_data)
+static void clipboard_release(SpiceGtkSession *self, guint selection)
 {
-    g_return_if_fail(SPICE_IS_GTK_SESSION(user_data));
-
-    SpiceGtkSession *self = user_data;
     SpiceGtkSessionPrivate *s = self->priv;
     GtkClipboard* clipboard = get_clipboard_from_selection(s, selection);
 
-    if (!clipboard)
-        return;
+    g_return_if_fail(clipboard != NULL);
 
     s->nclip_targets[selection] = 0;
 
@@ -1070,6 +1093,54 @@ static void clipboard_release(SpiceMainChannel *main, guint selection,
         return;
     gtk_clipboard_clear(clipboard);
     s->clipboard_by_guest[selection] = FALSE;
+}
+
+typedef struct SpiceGtkClipboardRelease {
+    SpiceGtkSession *self;
+    guint selection;
+} SpiceGtkClipboardRelease;
+
+static gboolean clipboard_release_timeout(gpointer user_data)
+{
+    SpiceGtkClipboardRelease *rel = user_data;
+
+    clipboard_release_delay_remove(rel->self, rel->selection, true);
+
+    return G_SOURCE_REMOVE;
+}
+
+/*
+ * The agents send release between two grabs. This may trigger
+ * clipboard managers trying to grab the clipboard. We end up with two
+ * sides, client and remote, racing for the clipboard grab, and
+ * believing each other is the owner.
+ *
+ * Workaround this problem by delaying the release event by 0.5 sec.
+ * FIXME: protocol change to solve the conflict and set client priority.
+ */
+#define CLIPBOARD_RELEASE_DELAY 500 /* ms */
+
+static void clipboard_release_delay(SpiceMainChannel *main, guint selection,
+                                    gpointer user_data)
+{
+    SpiceGtkSession *self = SPICE_GTK_SESSION(user_data);
+    SpiceGtkSessionPrivate *s = self->priv;
+    GtkClipboard* clipboard = get_clipboard_from_selection(s, selection);
+    SpiceGtkClipboardRelease *rel;
+
+    if (!clipboard) {
+        return;
+    }
+
+    clipboard_release_delay_remove(self, selection, true);
+
+    rel = g_new0(SpiceGtkClipboardRelease, 1);
+    rel->self = self;
+    rel->selection = selection;
+    s->clipboard_release_delay[selection] =
+        g_timeout_add_full(G_PRIORITY_DEFAULT, CLIPBOARD_RELEASE_DELAY,
+                           clipboard_release_timeout, rel, g_free);
+
 }
 
 static void channel_new(SpiceSession *session, SpiceChannel *channel,
@@ -1088,7 +1159,7 @@ static void channel_new(SpiceSession *session, SpiceChannel *channel,
         g_signal_connect(channel, "main-clipboard-selection-request",
                          G_CALLBACK(clipboard_request), self);
         g_signal_connect(channel, "main-clipboard-selection-release",
-                         G_CALLBACK(clipboard_release), self);
+                         G_CALLBACK(clipboard_release_delay), self);
     }
     if (SPICE_IS_INPUTS_CHANNEL(channel)) {
         spice_g_signal_connect_object(channel, "inputs-modifiers",
