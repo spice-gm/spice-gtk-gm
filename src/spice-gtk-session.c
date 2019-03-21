@@ -1115,7 +1115,8 @@ static gboolean clipboard_release_timeout(gpointer user_data)
  * sides, client and remote, racing for the clipboard grab, and
  * believing each other is the owner.
  *
- * Workaround this problem by delaying the release event by 0.5 sec.
+ * Workaround this problem by delaying the release event by 0.5 sec,
+ * unless the no-release-on-regrab capability is present.
  * FIXME: protocol change to solve the conflict and set client priority.
  */
 #define CLIPBOARD_RELEASE_DELAY 500 /* ms */
@@ -1133,6 +1134,12 @@ static void clipboard_release_delay(SpiceMainChannel *main, guint selection,
     }
 
     clipboard_release_delay_remove(self, selection, true);
+
+    if (spice_main_channel_agent_test_capability(s->main,
+                                                 VD_AGENT_CAP_CLIPBOARD_NO_RELEASE_ON_REGRAB)) {
+        clipboard_release(self, selection);
+        return;
+    }
 
     rel = g_new0(SpiceGtkClipboardRelease, 1);
     rel->self = self;
