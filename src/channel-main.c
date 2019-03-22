@@ -111,6 +111,7 @@ struct _SpiceMainChannelPrivate  {
     guint                       migrate_delayed_id;
     spice_migrate               *migrate_data;
     int                         max_clipboard;
+    uint32_t                    clipboard_serial[G_MAXUINT8+1];
 
     gboolean                    agent_volume_playback_sync;
     gboolean                    agent_volume_record_sync;
@@ -223,6 +224,7 @@ static const char *agent_caps[] = {
     [ VD_AGENT_CAP_MONITORS_CONFIG_POSITION ] = "monitors config position",
     [ VD_AGENT_CAP_FILE_XFER_DISABLED ] = "file transfer disabled",
     [ VD_AGENT_CAP_CLIPBOARD_NO_RELEASE_ON_REGRAB ] = "no release on re-grab",
+    [ VD_AGENT_CAP_CLIPBOARD_GRAB_SERIAL ] = "clipboard grab serial",
 };
 #define NAME(_a, _i) ((_i) < SPICE_N_ELEMENTS(_a) ? (_a[(_i)] ?: "?") : "?")
 
@@ -412,6 +414,7 @@ static void spice_main_channel_reset_agent(SpiceMainChannel *channel)
 
     spice_main_channel_reset_all_xfer_operations(channel);
     file_xfer_flushed(channel, FALSE);
+    memset(c->clipboard_serial, 0, sizeof(c->clipboard_serial));
 }
 
 /* main or coroutine context */
@@ -1335,6 +1338,7 @@ static void agent_announce_caps(SpiceMainChannel *channel)
     VD_AGENT_SET_CAPABILITY(caps->caps, VD_AGENT_CAP_MONITORS_CONFIG_POSITION);
     VD_AGENT_SET_CAPABILITY(caps->caps, VD_AGENT_CAP_FILE_XFER_DETAILED_ERRORS);
     VD_AGENT_SET_CAPABILITY(caps->caps, VD_AGENT_CAP_CLIPBOARD_NO_RELEASE_ON_REGRAB);
+    VD_AGENT_SET_CAPABILITY(caps->caps, VD_AGENT_CAP_CLIPBOARD_GRAB_SERIAL);
 
     agent_msg_queue(channel, VD_AGENT_ANNOUNCE_CAPABILITIES, size, caps);
     g_free(caps);
@@ -1365,14 +1369,23 @@ static void agent_clipboard_grab(SpiceMainChannel *channel, guint selection,
         return;
     }
 
+    if (test_agent_cap(channel, VD_AGENT_CAP_CLIPBOARD_GRAB_SERIAL)) {
+        size += sizeof(uint32_t);
+    }
+
     msg = g_alloca(size);
     memset(msg, 0, size);
 
     grab = (VDAgentClipboardGrab *)msg;
 
     if (test_agent_cap(channel, VD_AGENT_CAP_CLIPBOARD_SELECTION)) {
-        msg[0] = selection;
-        grab = (VDAgentClipboardGrab *)(msg + 4);
+        *(uint8_t *)grab = selection;
+        grab = (void *)grab + sizeof(uint32_t);
+    }
+
+    if (test_agent_cap(channel, VD_AGENT_CAP_CLIPBOARD_GRAB_SERIAL)) {
+        *(uint32_t *)grab = GUINT32_TO_LE(c->clipboard_serial[selection]++);
+        grab = (void *)grab + sizeof(uint32_t);
     }
 
     for (i = 0; i < ntypes; i++) {
@@ -1974,6 +1987,7 @@ static void main_agent_handle_msg(SpiceChannel *channel,
     SpiceMainChannel *self = SPICE_MAIN_CHANNEL(channel);
     SpiceMainChannelPrivate *c = self->priv;
     guint8 selection = VD_AGENT_CLIPBOARD_SELECTION_CLIPBOARD;
+    guint32 serial;
 
     g_return_if_fail(msg->protocol == VD_AGENT_PROTOCOL);
 
@@ -2045,6 +2059,21 @@ static void main_agent_handle_msg(SpiceChannel *channel,
     case VD_AGENT_CLIPBOARD_GRAB:
     {
         gboolean ret;
+
+        if (test_agent_cap(self, VD_AGENT_CAP_CLIPBOARD_GRAB_SERIAL)) {
+            serial = GUINT32_FROM_LE(*((guint32 *)payload));
+            payload = ((guint8 *)payload) + sizeof(uint32_t);
+            msg->size -= sizeof(uint32_t);
+
+            if (serial == c->clipboard_serial[selection]) {
+                c->clipboard_serial[selection]++;
+            } else {
+                CHANNEL_DEBUG(channel, "grab discard, serial:%u != c->serial:%u",
+                              serial, c->clipboard_serial[selection]);
+                break;
+            }
+        }
+
         g_coroutine_signal_emit(self, signals[SPICE_MAIN_CLIPBOARD_SELECTION_GRAB], 0, selection,
                           (guint8*)payload, msg->size / sizeof(uint32_t), &ret);
         if (selection == VD_AGENT_CLIPBOARD_SELECTION_CLIPBOARD)

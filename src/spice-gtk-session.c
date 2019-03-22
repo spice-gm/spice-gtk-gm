@@ -1117,7 +1117,6 @@ static gboolean clipboard_release_timeout(gpointer user_data)
  *
  * Workaround this problem by delaying the release event by 0.5 sec,
  * unless the no-release-on-regrab capability is present.
- * FIXME: protocol change to solve the conflict and set client priority.
  */
 #define CLIPBOARD_RELEASE_DELAY 500 /* ms */
 
