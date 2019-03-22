@@ -1354,6 +1354,7 @@ static void agent_clipboard_grab(SpiceMainChannel *channel, guint selection,
     if (!c->agent_connected)
         return;
 
+    g_return_if_fail(selection <= G_MAXUINT8);
     g_return_if_fail(test_agent_cap(channel, VD_AGENT_CAP_CLIPBOARD_BY_DEMAND));
 
     size = sizeof(VDAgentClipboardGrab) + sizeof(uint32_t) * ntypes;
