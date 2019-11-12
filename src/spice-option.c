@@ -39,6 +39,7 @@ static gint cache_size = 0;
 static gint glz_window_size = 0;
 static gchar *secure_channels = NULL;
 static gchar *shared_dir = NULL;
+static gchar **cd_share_files = NULL;
 static SpiceImageCompression preferred_compression = SPICE_IMAGE_COMPRESSION_INVALID;
 
 G_GNUC_NORETURN
@@ -183,6 +184,8 @@ GOptionGroup* spice_get_option_group(void)
           N_("Filter selecting USB devices to be auto-redirected when plugged in"), N_("<filter-string>") },
         { "spice-usbredir-redirect-on-connect", '\0', 0, G_OPTION_ARG_STRING, &usbredir_redirect_on_connect,
           N_("Filter selecting USB devices to redirect on connect"), N_("<filter-string>") },
+        { "spice-share-cd", '\0', 0, G_OPTION_ARG_STRING_ARRAY, &cd_share_files,
+          N_("Name of ISO file or CD/DVD device to share"), N_("<filename> (repeat allowed)") },
         { "spice-cache-size", '\0', 0, G_OPTION_ARG_INT, &cache_size,
           N_("Image cache size (deprecated)"), N_("<bytes>") },
         { "spice-glz-window-size", '\0', 0, G_OPTION_ARG_INT, &glz_window_size,
@@ -287,6 +290,31 @@ void spice_set_session_option(SpiceSession *session)
             g_object_set(m, "redirect-on-connect",
                          usbredir_redirect_on_connect, NULL);
         }
+    }
+    if (cd_share_files) {
+        SpiceUsbDeviceManager *m =
+                get_usb_device_manager_for_option(session, "--spice-share-cd");
+        if (m) {
+            gchar **name = cd_share_files;
+            GError *err = NULL;
+            gboolean rc;
+
+            while (name && *name) {
+                rc = spice_usb_device_manager_create_shared_cd_device(m, *name, &err);
+                if (!rc) {
+                    if (err == NULL) {
+                        g_warning("Failed to create shared CD device %s", *name);
+                    } else {
+                        g_warning("Failed to create shared CD device %s: %s",
+                                  *name, err->message);
+                        g_clear_error(&err);
+                    }
+                }
+                name++;
+            }
+        }
+        g_strfreev(cd_share_files);
+        cd_share_files = NULL;
     }
     if (disable_usbredir)
         g_object_set(session, "enable-usbredir", FALSE, NULL);
