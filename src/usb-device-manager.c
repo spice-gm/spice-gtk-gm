@@ -894,6 +894,7 @@ static void spice_usb_device_manager_check_redir_on_connect(SpiceUsbDeviceManage
     SpiceUsbDeviceManagerPrivate *priv = manager->priv;
     GTask *task;
     SpiceUsbDevice *device;
+    gboolean is_cd, shall_redirect;
     guint i;
 
     if (priv->redirect_on_connect == NULL) {
@@ -907,9 +908,20 @@ static void spice_usb_device_manager_check_redir_on_connect(SpiceUsbDeviceManage
             continue;
         }
 
-        if (spice_usb_backend_device_check_filter(device,
-                                                  priv->redirect_on_connect_rules,
-                                                  priv->redirect_on_connect_rules_count) == 0) {
+        is_cd = spice_usb_device_manager_is_device_shared_cd(manager, device);
+
+        if (is_cd) {
+            shall_redirect = TRUE;
+        } else if (priv->redirect_on_connect) {
+            const struct usbredirfilter_rule *rules = priv->redirect_on_connect_rules;
+            int rules_count = priv->redirect_on_connect_rules_count;
+
+            shall_redirect = !spice_usb_backend_device_check_filter(device, rules, rules_count);
+        } else {
+            shall_redirect = FALSE;
+        }
+
+        if (shall_redirect) {
             /* Note: re-uses spice_usb_device_manager_connect_device_async's
                completion handling code! */
             task = g_task_new(manager,
