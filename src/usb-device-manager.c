@@ -32,6 +32,7 @@
 #endif
 
 #include "channel-usbredir-priv.h"
+#include "usb-device-cd.h"
 #endif
 
 #include "spice-session-priv.h"
@@ -1424,6 +1425,85 @@ gchar *spice_usb_device_get_description(SpiceUsbDevice *device, const gchar *for
     return spice_usb_backend_device_get_description(device, format);
 #else
     return NULL;
+#endif
+}
+
+/**
+ * spice_usb_device_manager_create_shared_cd_device:
+ * @manager: a #SpiceUsbDeviceManager
+ * @filename: image or device path
+ * @err: (allow-none): a return location for a #GError, or %NULL.
+ *
+ * Creates a new shared CD device based on a disk image file
+ * or a physical CD device.
+ *
+ * Returns: %TRUE if device created successfully
+ */
+gboolean
+spice_usb_device_manager_create_shared_cd_device(SpiceUsbDeviceManager *manager,
+                                                 gchar *filename,
+                                                 GError **err)
+{
+#ifdef USE_USBREDIR
+    SpiceUsbDeviceManagerPrivate *priv = manager->priv;
+
+    CdEmulationParams cd_params = {
+        .filename = filename,
+        .delete_on_eject = 1,
+    };
+
+    return create_emulated_cd(priv->context, &cd_params, err);
+#else
+    g_set_error_literal(err, SPICE_CLIENT_ERROR, SPICE_CLIENT_ERROR_FAILED,
+                        _("USB redirection support not compiled in"));
+    return FALSE;
+#endif
+}
+
+/**
+ * spice_usb_device_manager_remove_shared_cd_device:
+ * @manager: a #SpiceUsbDeviceManager
+ * @device: a #SpiceUsbDevice to remove
+ * @err: (allow-none): a return location for a #GError, or %NULL.
+ *
+ * Removes a shared CD device.
+ *
+ * Returns: %TRUE if device removed successfully
+ */
+gboolean
+spice_usb_device_manager_remove_shared_cd_device(SpiceUsbDeviceManager *manager,
+                                                 SpiceUsbDevice *device,
+                                                 GError **err)
+{
+#ifdef USE_USBREDIR
+    spice_usb_backend_device_eject(manager->priv->context, device);
+    return TRUE;
+#else
+    g_set_error_literal(err, SPICE_CLIENT_ERROR, SPICE_CLIENT_ERROR_FAILED,
+                        _("USB redirection support not compiled in"));
+    return FALSE;
+#endif
+}
+
+/**
+ * spice_usb_device_manager_is_device_shared_cd:
+ * @manager: a #SpiceUsbDeviceManager
+ * @device: a #SpiceUsbDevice to query
+ *
+ * Checks whether a device is shared CD.
+ *
+ * Returns: %TRUE if the device is shared CD
+ */
+gboolean
+spice_usb_device_manager_is_device_shared_cd(SpiceUsbDeviceManager *manager,
+                                             SpiceUsbDevice *device)
+{
+#ifdef USE_USBREDIR
+    gboolean is_cd = (spice_usb_backend_device_get_libdev(device) == NULL);
+
+    return is_cd;
+#else
+    return FALSE;
 #endif
 }
 

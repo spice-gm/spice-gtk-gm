@@ -145,6 +145,18 @@ spice_usb_device_manager_can_redirect_device(SpiceUsbDeviceManager *manager,
 
 gboolean spice_usb_device_manager_is_redirecting(SpiceUsbDeviceManager *manager);
 
+gboolean
+spice_usb_device_manager_create_shared_cd_device(SpiceUsbDeviceManager *manager,
+                                                 gchar *filename,
+                                                 GError **err);
+gboolean
+spice_usb_device_manager_remove_shared_cd_device(SpiceUsbDeviceManager *manager,
+                                                 SpiceUsbDevice *device,
+                                                 GError **err);
+gboolean
+spice_usb_device_manager_is_device_shared_cd(SpiceUsbDeviceManager *manager,
+                                             SpiceUsbDevice *device);
+
 G_END_DECLS
 
 #endif /* __SPICE_USB_DEVICE_MANAGER_H__ */
