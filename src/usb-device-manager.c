@@ -938,6 +938,26 @@ static void spice_usb_device_manager_check_redir_on_connect(SpiceUsbDeviceManage
     }
 }
 
+static void
+spice_usb_device_manager_handle_disconnect(SpiceUsbDeviceManager *manager,
+                                           SpiceUsbDevice *device)
+{
+    if (spice_usb_device_manager_is_device_shared_cd(manager, device)) {
+        GError *err = NULL;
+        gboolean rc;
+
+        rc = spice_usb_device_manager_remove_shared_cd_device(manager, device, &err);
+        if (!rc) {
+            if (err) {
+                SPICE_DEBUG("Failed to remove cd device, %s", err->message);
+                g_error_free(err);
+            } else {
+                SPICE_DEBUG("Failed to remove cd device");
+            }
+        }
+    }
+}
+
 void spice_usb_device_manager_device_error(SpiceUsbDeviceManager *manager,
                                            SpiceUsbDevice *device,
                                            GError *err)
@@ -946,6 +966,7 @@ void spice_usb_device_manager_device_error(SpiceUsbDeviceManager *manager,
     g_return_if_fail(device != NULL);
 
     g_signal_emit(manager, signals[DEVICE_ERROR], 0, device, err);
+    spice_usb_device_manager_handle_disconnect(manager, device);
 }
 #endif
 
@@ -1151,8 +1172,9 @@ void spice_usb_device_manager_connect_device_async(SpiceUsbDeviceManager *manage
 
 #ifdef USE_USBREDIR
 
-    GTask *task =
-        g_task_new(G_OBJECT(manager), cancellable, callback, user_data);
+    GTask *task = g_task_new(G_OBJECT(manager), cancellable, callback, user_data);
+
+    g_task_set_task_data(task, device, NULL);
 
     _set_redirecting(manager, TRUE);
     _spice_usb_device_manager_connect_device_async(manager, device,
@@ -1213,13 +1235,19 @@ void _connect_device_async_cb(GObject *gobject,
 {
     SpiceUsbDeviceManager *manager = SPICE_USB_DEVICE_MANAGER(gobject);
     GTask *task = user_data;
-    GError *error = NULL;
+    GError *err = NULL;
+    gboolean rc;
 
     _set_redirecting(manager, FALSE);
-    if (_spice_usb_device_manager_connect_device_finish(manager, channel_res, &error)) {
+
+    rc = _spice_usb_device_manager_connect_device_finish(manager, channel_res, &err);
+    if (rc) {
         g_task_return_boolean(task, TRUE);
     } else {
-        g_task_return_error(task, error);
+        SpiceUsbDevice *device = g_task_get_task_data(task);
+
+        spice_usb_device_manager_handle_disconnect(manager, device);
+        g_task_return_error(task, err);
     }
     g_object_unref(task);
 }
@@ -1265,8 +1293,9 @@ void _disconnect_device_async_cb(GObject *gobject,
 {
     SpiceUsbredirChannel *channel = SPICE_USBREDIR_CHANNEL(gobject);
     GTask *task = user_data;
-    GError *err = NULL;
     SpiceUsbDeviceManager *manager = SPICE_USB_DEVICE_MANAGER(g_task_get_source_object(task));
+    SpiceUsbDevice *device = g_task_get_task_data(task);
+    GError *err = NULL;
 
     _set_redirecting(manager, FALSE);
 
@@ -1275,6 +1304,8 @@ void _disconnect_device_async_cb(GObject *gobject,
         g_task_return_error(task, err);
     } else {
         g_task_return_boolean(task, TRUE);
+
+        spice_usb_device_manager_handle_disconnect(manager, device);
     }
 
     g_object_unref(task);
@@ -1316,6 +1347,7 @@ void spice_usb_device_manager_disconnect_device_async(SpiceUsbDeviceManager *man
 
     channel = spice_usb_device_manager_get_channel_for_dev(manager, device);
     nested  = g_task_new(G_OBJECT(manager), cancellable, callback, user_data);
+    g_task_set_task_data(nested, device, NULL);
 
     spice_usbredir_channel_disconnect_device_async(channel, cancellable,
                                                    _disconnect_device_async_cb,
