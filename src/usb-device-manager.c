@@ -943,18 +943,7 @@ spice_usb_device_manager_handle_disconnect(SpiceUsbDeviceManager *manager,
                                            SpiceUsbDevice *device)
 {
     if (spice_usb_device_manager_is_device_shared_cd(manager, device)) {
-        GError *err = NULL;
-        gboolean rc;
-
-        rc = spice_usb_device_manager_remove_shared_cd_device(manager, device, &err);
-        if (!rc) {
-            if (err) {
-                SPICE_DEBUG("Failed to remove cd device, %s", err->message);
-                g_error_free(err);
-            } else {
-                SPICE_DEBUG("Failed to remove cd device");
-            }
-        }
+        spice_usb_backend_device_eject(manager->priv->context, device);
     }
 }
 
@@ -1497,31 +1486,6 @@ spice_usb_device_manager_create_shared_cd_device(SpiceUsbDeviceManager *manager,
     };
 
     return create_emulated_cd(priv->context, &cd_params, err);
-#else
-    g_set_error_literal(err, SPICE_CLIENT_ERROR, SPICE_CLIENT_ERROR_FAILED,
-                        _("USB redirection support not compiled in"));
-    return FALSE;
-#endif
-}
-
-/**
- * spice_usb_device_manager_remove_shared_cd_device:
- * @manager: a #SpiceUsbDeviceManager
- * @device: a #SpiceUsbDevice to remove
- * @err: (allow-none): a return location for a #GError, or %NULL.
- *
- * Removes a shared CD device.
- *
- * Returns: %TRUE if device removed successfully
- */
-gboolean
-spice_usb_device_manager_remove_shared_cd_device(SpiceUsbDeviceManager *manager,
-                                                 SpiceUsbDevice *device,
-                                                 GError **err)
-{
-#ifdef USE_USBREDIR
-    spice_usb_backend_device_eject(manager->priv->context, device);
-    return TRUE;
 #else
     g_set_error_literal(err, SPICE_CLIENT_ERROR, SPICE_CLIENT_ERROR_FAILED,
                         _("USB redirection support not compiled in"));

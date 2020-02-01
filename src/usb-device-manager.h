@@ -150,10 +150,6 @@ spice_usb_device_manager_create_shared_cd_device(SpiceUsbDeviceManager *manager,
                                                  gchar *filename,
                                                  GError **err);
 gboolean
-spice_usb_device_manager_remove_shared_cd_device(SpiceUsbDeviceManager *manager,
-                                                 SpiceUsbDevice *device,
-                                                 GError **err);
-gboolean
 spice_usb_device_manager_is_device_shared_cd(SpiceUsbDeviceManager *manager,
                                              SpiceUsbDevice *device);
 
