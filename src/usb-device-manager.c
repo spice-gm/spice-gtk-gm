@@ -1507,6 +1507,11 @@ spice_usb_device_manager_is_device_shared_cd(SpiceUsbDeviceManager *manager,
                                              SpiceUsbDevice *device)
 {
 #ifdef USE_USBREDIR
+    /* TODO This function currently return TRUE for all emulated
+     * devices. Currently only shared CDs are implemented as shared
+     * devices but this will break adding new emulated devices.
+     * Check VID/PID in the future.
+     */
     gboolean is_cd = (spice_usb_backend_device_get_libdev(device) == NULL);
 
     return is_cd;
