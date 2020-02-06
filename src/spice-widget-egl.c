@@ -26,7 +26,6 @@
 #include "spice-widget.h"
 #include "spice-widget-priv.h"
 #include "spice-gtk-session-priv.h"
-#include <libdrm/drm_fourcc.h>
 
 #ifdef GDK_WINDOWING_X11
 #include <gdk/gdkx.h>
