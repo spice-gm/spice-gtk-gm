@@ -1,0 +1,358 @@
+# Copyright (C) YEAR THE PACKAGE'S COPYRIGHT HOLDER
+# This file is distributed under the same license as the PACKAGE package.
+#
+# Dmitry Astankov <mornie@basealt.ru>, 2019, 2020.
+msgid ""
+msgstr ""
+"Project-Id-Version: \n"
+"Report-Msgid-Bugs-To: spice-devel@lists.freedesktop.org\n"
+"POT-Creation-Date: 2019-01-05 12:47+0400\n"
+"PO-Revision-Date: 2020-02-27 11:30MSK\n"
+"Last-Translator: Dmitry Astankov <translation-team@basealt.ru>\n"
+"Language-Team: Basealt Translation Team\n"
+"Language: ru_RU\n"
+"MIME-Version: 1.0\n"
+"Content-Type: text/plain; charset=UTF-8\n"
+"Content-Transfer-Encoding: 8bit\n"
+"Plural-Forms: nplurals=3; plural=(n%10==1 && n%100!=11 ? 0 : n%10>=2 && n%10<"
+"=4 && (n%100<10 || n%100>=20) ? 1 : 2);\n"
+"X-Generator: Lokalize 2.0\n"
+
+#: src/channel-main.c:1898
+msgid "The spice agent cancelled the file transfer"
+msgstr "Передача файлов отменена агентом SPICE"
+
+#: src/channel-main.c:1902
+msgid "The spice agent reported an error during the file transfer"
+msgstr "Агент SPICE сообщил об ошибке в процессе передачи файлов"
+
+#: src/channel-main.c:1909
+#, c-format
+msgid ""
+"File transfer failed due to lack of free space on remote machine (%s free, "
+"%s to transfer)"
+msgstr ""
+"При передаче файлов произошла ошибка из-за нехватки свободного места на "
+"удалённом компьютере (%s свободно, %s требуется)"
+
+#: src/channel-main.c:1917
+msgid ""
+"User's session is locked and cannot transfer files, unlock it and try again."
+msgstr ""
+"Сеанс пользователя заблокирован, передача файлов невозможна. Разблокируйте "
+"сеанс и попробуйте ещё раз."
+
+#: src/channel-main.c:1922
+msgid "Session agent not connected."
+msgstr "Агент сеансов не подключён."
+
+#: src/channel-main.c:1926
+msgid "File transfer is disabled."
+msgstr "Передача файлов отключена."
+
+#: src/channel-main.c:3318
+#, c-format
+msgid "The file transfer is disabled"
+msgstr "Передача файлов отключена"
+
+#: src/channel-usbredir.c:920
+#, c-format
+msgid "usbredir protocol parse error for %s"
+msgstr "Ошибка анализа протокола usbredir для %s"
+
+#: src/channel-usbredir.c:925
+#, c-format
+msgid "%s rejected by host"
+msgstr "Устройство %s отклонено хостом"
+
+#: src/channel-usbredir.c:930
+#, c-format
+msgid "%s disconnected (fatal IO error)"
+msgstr "Устройство %s отключено (критическая ошибка ввода-вывода)"
+
+#: src/channel-usbredir.c:934
+#, c-format
+msgid "Unknown error (%d) for %s"
+msgstr "Неизвестная ошибка (%d) для устройства %s"
+
+#: src/desktop-integration.c:98
+msgid "Automounting has been inhibited for USB auto-redirecting"
+msgstr "Автомонтирование при перенаправлении USB-устройств было запрещено"
+
+#: src/spice-channel.c:1178
+msgid "Authentication failed"
+msgstr "Ошибка аутентификации"
+
+#: src/spice-channel.c:1196
+msgid "Authentication failed: password is too long"
+msgstr "Ошибка аутентификации: слишком длинный пароль"
+
+#: src/spice-channel.c:1201
+msgid "Authentication failed: wrong password?"
+msgstr "Ошибка аутентификации: неверный пароль"
+
+#: src/spice-option.c:65
+#, c-format
+msgid "missing color depth, must be 16 or 32"
+msgstr "не указано значение глубины цвета; должно быть равно 16 или 32"
+
+#: src/spice-option.c:81
+#, c-format
+msgid "invalid color depth (%s), must be 16 or 32"
+msgstr "неверное значение глубины цвета (%s); должно быть равно 16 или 32"
+
+#: src/spice-option.c:101
+#, c-format
+msgid ""
+"invalid effect name (%s), must be 'wallpaper', 'font-smooth', 'animation' or "
+"'all'"
+msgstr ""
+"неверное название эффекта (%s); допустимые варианты: «wallpaper», «font-"
+"smooth», «animation» или «all»"
+
+#: src/spice-option.c:125
+#, c-format
+msgid "invalid channel name (%s), valid names: all, %s"
+msgstr "неверное имя канала (%s); допустимые значения: «all», «%s»"
+
+#: src/spice-option.c:173
+#, c-format
+msgid "Image compression algorithm %s not supported"
+msgstr "Алгоритм сжатия изображений «%s» не поддерживается"
+
+#: src/spice-option.c:195
+msgid "Force the specified channels to be secured"
+msgstr "Принудительная защита указанных каналов"
+
+#: src/spice-option.c:197
+msgid "Disable guest display effects"
+msgstr "Отключить эффекты отображения для гостевой системы"
+
+#: src/spice-option.c:199
+msgid "Guest display color depth (deprecated)"
+msgstr "Глубина цвета экрана гостевой системы (устаревшее)"
+
+#: src/spice-option.c:201
+msgid "Truststore file for secure connections"
+msgstr "Файл из надёжного хранилища для безопасных соединений"
+
+#: src/spice-option.c:201
+msgid "<file>"
+msgstr "<файл>"
+
+#: src/spice-option.c:203
+msgid "Subject of the host certificate (field=value pairs separated by commas)"
+msgstr "Субъект сертификата хоста (поле=значения, разделённые запятыми)"
+
+#: src/spice-option.c:203
+msgid "<host-subject>"
+msgstr "<субъект-хоста>"
+
+#: src/spice-option.c:205
+msgid "Disable audio support"
+msgstr "Отключить поддержку звуковых эффектов"
+
+#: src/spice-option.c:207
+msgid "Enable smartcard support"
+msgstr "Включить поддержку смарт-карт"
+
+#: src/spice-option.c:209
+msgid ""
+"Certificates to use for software smartcards (field=values separated by "
+"commas)"
+msgstr ""
+"Сертификаты, используемые для программных смарт-карт (поле=значения, "
+"разделённые запятыми)"
+
+#: src/spice-option.c:209
+msgid "<certificates>"
+msgstr "<сертификаты>"
+
+#: src/spice-option.c:211
+msgid ""
+"Path to the local certificate database to use for software smartcard "
+"certificates"
+msgstr ""
+"Путь к локальной базе данных сертификатов, используемых для программных "
+"смарт-карт"
+
+#: src/spice-option.c:211
+msgid "<certificate-db>"
+msgstr "<бд-сертификатов>"
+
+#: src/spice-option.c:213
+msgid "Disable USB redirection support"
+msgstr "Отключить поддержку перенаправления USB"
+
+#: src/spice-option.c:218
+msgid "Filter selecting USB devices to be auto-redirected when plugged in"
+msgstr ""
+"Фильтр, выбирающий USB-устройства для их автоматического перенаправления при "
+"подключении"
+
+#: src/spice-option.c:218 src/spice-option.c:220
+msgid "<filter-string>"
+msgstr "<строка-фильтра>"
+
+#: src/spice-option.c:220
+msgid "Filter selecting USB devices to redirect on connect"
+msgstr ""
+"Фильтр, выбирающий USB-устройства для их перенаправления при подключении"
+
+#: src/spice-option.c:222
+msgid "Image cache size (deprecated)"
+msgstr "Размер кэша изображений (устаревшее)"
+
+#: src/spice-option.c:222 src/spice-option.c:224
+msgid "<bytes>"
+msgstr "<размер-в-байтах>"
+
+#: src/spice-option.c:224
+msgid "Glz compression history size (deprecated)"
+msgstr "Размер журнала алгоритма сжатия Glz (устаревшее)"
+
+#: src/spice-option.c:226
+msgid "Shared directory"
+msgstr "Общая папка"
+
+#: src/spice-option.c:226
+msgid "<dir>"
+msgstr "<папка>"
+
+#: src/spice-option.c:228
+msgid "Preferred image compression algorithm"
+msgstr "Предпочтительный алгоритм сжатия изображений"
+
+#: src/spice-option.c:236
+msgid "Enable Spice-GTK debugging"
+msgstr "Включить отладку Spice-GTK"
+
+#: src/spice-option.c:238
+msgid "Display Spice-GTK version information"
+msgstr "Показать информацию о версии Spice-GTK"
+
+#: src/spice-option.c:243
+msgid "Spice Options:"
+msgstr "Параметры SPICE:"
+
+#: src/spice-option.c:243
+msgid "Show Spice Options"
+msgstr "Показать параметры SPICE"
+
+#: src/usb-device-manager.c:362 src/usb-device-manager.c:1777
+msgid "USB redirection support not compiled in"
+msgstr "Поддержка перенаправления USB-устройств не скомпилирована"
+
+#: src/usb-device-manager.c:1464
+msgid "Device was not found"
+msgstr "Устройство не найдено"
+
+#: src/usb-device-manager.c:1480
+msgid "No free USB channel"
+msgstr "Нет свободных USB-каналов"
+
+#: src/usb-device-manager.c:1714
+msgid "USB redirection is disabled"
+msgstr "Перенаправление USB-устройств отключено"
+
+#: src/usb-device-manager.c:1720
+msgid "The connected VM is not configured for USB redirection"
+msgstr ""
+"Подключённая виртуальная машина не настроена для перенаправления USB-"
+"устройств"
+
+#: src/usb-device-manager.c:1742
+msgid "Some USB devices were not found"
+msgstr "Некоторые USB-устройства не были найдены"
+
+#: src/usb-device-manager.c:1752
+msgid "Some USB devices are blocked by host policy"
+msgstr "Некоторые USB-устройства блокируются политикой хоста"
+
+#: src/usb-device-manager.c:1770
+msgid "There are no free USB channels"
+msgstr "Нет свободных USB-каналов"
+
+#: src/usb-device-manager.c:1826
+#, c-format
+msgid "%s %s %s at %d-%d"
+msgstr "%s %s %s — %d-%d"
+
+#: src/usb-device-widget.c:187
+msgid "Select USB devices to redirect"
+msgstr "Выберите USB-устройства для перенаправления"
+
+#: src/usb-device-widget.c:393
+#, c-format
+msgid "Select USB devices to redirect (%d free channel)"
+msgid_plural "Select USB devices to redirect (%d free channels)"
+msgstr[0] "Выберите USB-устройства для перенаправления (%d свободный канал)"
+msgstr[1] "Выберите USB-устройства для перенаправления (%d свободных канала)"
+msgstr[2] "Выберите USB-устройства для перенаправления (%d свободных каналов)"
+
+#: src/usb-device-widget.c:411
+msgid "Redirecting USB Device..."
+msgstr "Перенаправление USB-устройства..."
+
+#: src/usb-device-widget.c:419
+msgid "No USB devices detected"
+msgstr "USB-устройства не обнаружены"
+
+#: src/usbutil.c:296
+msgid "USB"
+msgstr "USB"
+
+#: src/usbutil.c:298
+msgid "Device"
+msgstr "Устройство"
+
+#: tools/spice-cmdline.c:36
+msgid "Spice server uri"
+msgstr "URI SPICE-сервера"
+
+#: tools/spice-cmdline.c:37
+msgid "<uri>"
+msgstr "<uri>"
+
+#: tools/spice-cmdline.c:43
+msgid "Spice server address"
+msgstr "Адрес SPICE-сервера"
+
+#: tools/spice-cmdline.c:44
+msgid "<host>"
+msgstr "<хост>"
+
+#: tools/spice-cmdline.c:50
+msgid "Spice server port"
+msgstr "Порт SPICE-сервера"
+
+#: tools/spice-cmdline.c:51 tools/spice-cmdline.c:58
+msgid "<port>"
+msgstr "<порт>"
+
+#: tools/spice-cmdline.c:57
+msgid "Spice server secure port"
+msgstr "Защищённый порт SPICE-сервера"
+
+#: tools/spice-cmdline.c:64
+msgid "Server password"
+msgstr "Пароль сервера"
+
+#: tools/spice-cmdline.c:65
+msgid "<password>"
+msgstr "<пароль>"
+
+#: tools/spice-cmdline.c:76
+msgid "Spice connection options:"
+msgstr "Параметры подключения SPICE:"
+
+#: tools/spice-cmdline.c:77
+msgid "Show Spice options"
+msgstr "Показать параметры SPICE"
+
+#, fuzzy
+#~ msgid "Authentication failed: password and username are required"
+#~ msgstr "Ошибка аутентификации: слишком длинный пароль"
+
+#~ msgid "Select USB devices to redirect (%d free channels)"
+#~ msgstr "Укажите USB-устройства для перенаправления (свободных каналов: %d)"
