@@ -314,6 +314,64 @@ if spice_gtk_has_gtk
   endforeach
 
   #
+  # Wayland protocols
+  #
+  if spice_gtk_has_wayland_protocols
+
+    generated_protocols = [
+      [ 'pointer-constraints', 'v1' ],
+      [ 'relative-pointer', 'v1' ],
+     #[ 'input-method', 'v1' ],
+     #[ 'input-timestamps', 'v1' ],
+     #[ 'fullscreen-shell', 'v1' ],
+     #[ 'linux-dmabuf', 'v1' ],
+     #[ 'linux-explicit-synchronization', 'v1' ],
+     #[ 'presentation-time', 'stable' ],
+     #[ 'tablet', 'v2' ],
+     #[ 'text-input', 'v1' ],
+     #[ 'viewporter', 'stable' ],
+     #[ 'xdg-output', 'v1' ],
+     #[ 'xdg-shell', 'v6' ],
+     #[ 'xdg-shell', 'stable' ],
+    ]
+
+    foreach proto: generated_protocols
+      proto_name = proto[0]
+      if proto[1] == 'internal'
+        base_file = proto_name
+        xml_path = '@0@.xml'.format(proto_name)
+      elif proto[1] == 'stable'
+        base_file = proto_name
+        xml_path = '@0@/stable/@1@/@1@.xml'.format(dir_wp_base, base_file)
+      else
+        base_file = '@0@-unstable-@1@'.format(proto_name, proto[1])
+        xml_path = '@0@/unstable/@1@/@2@.xml'.format(dir_wp_base, proto_name, base_file)
+      endif
+
+      foreach output_type: [ 'client-header', 'server-header', 'private-code' ]
+        if output_type == 'client-header'
+          output_file = '@0@-client-protocol.h'.format(base_file)
+        elif output_type == 'server-header'
+          output_file = '@0@-server-protocol.h'.format(base_file)
+        else
+          output_file = '@0@-protocol.c'.format(base_file)
+          if dep_scanner.version().version_compare('< 1.14.91')
+              output_type = 'code'
+          endif
+        endif
+
+        spice_client_gtk_sources += custom_target(
+          '@0@ @1@'.format(base_file, output_type),
+          command: [ prog_scanner, output_type, '@INPUT@', '@OUTPUT@' ],
+          input: xml_path,
+          output: output_file,
+        )
+        message('@0@ @1@: @2@ -> @3@'.format(prog_scanner, output_type, xml_path, output_file))
+      endforeach
+    endforeach
+  endif
+
+  #
   # libspice-client-gtk.so
   #
   spice_client_gtk_syms = spice_client_glib_syms
@@ -338,11 +396,11 @@ if spice_gtk_has_gtk
                                  install : true,
                                  link_args : [spice_gtk_version_script],
                                  link_depends : spice_client_gtk_syms,
-                                 dependencies : [spice_client_glib_dep, spice_gtk_deps])
+                                 dependencies : [spice_client_glib_dep, spice_gtk_deps, spice_wayland_deps])
 
   spice_client_gtk_dep = declare_dependency(sources : spice_widget_enums[1],
                                             link_with : spice_client_gtk_lib,
-                                            dependencies : [spice_client_glib_dep, spice_gtk_deps])
+                                            dependencies : [spice_client_glib_dep, spice_gtk_deps, spice_wayland_deps])
 
   if spice_gtk_has_introspection
     #

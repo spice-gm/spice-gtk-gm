@@ -31,6 +31,7 @@ spice_gtk_config_data = configuration_data()
 spice_gtk_include = [include_directories('.')]
 spice_glib_deps = []
 spice_gtk_deps = []
+spice_wayland_deps = []
 spice_acl_deps = []
 spice_protocol_version = '0.14.2'
 
@@ -152,6 +153,25 @@ if d.found()
     endif
   endif
   spice_gtk_has_gtk = true
+endif
+
+# wayland protocols
+spice_gtk_has_wayland_protocols = false
+# Check if gtk is enabled and supports the wayland backend
+if host_machine.system() != 'windows' and spice_gtk_has_gtk and compiler.has_header('gtk-3.0/gdk/gdkwayland.h')
+  d = dependency('wayland-protocols', version: '>= 1.17', required: get_option('wayland-protocols'))
+  if d.found()
+    spice_gtk_config_data.set('HAVE_WAYLAND_PROTOCOLS', '1')
+    dir_wp_base = d.get_pkgconfig_variable('pkgdatadir')
+    dep_scanner = dependency('wayland-scanner', native: true)
+    prog_scanner = find_program(dep_scanner.get_pkgconfig_variable('wayland_scanner'))
+
+    wayland_libs_version_required = '1.17.0'
+    spice_wayland_deps += dependency('wayland-server', version : '>= @0@'.format(wayland_libs_version_required))
+    spice_wayland_deps += dependency('wayland-cursor', version : '>= @0@'.format(wayland_libs_version_required))
+    spice_wayland_deps += dependency('wayland-client', version : '>= @0@'.format(wayland_libs_version_required))
+    spice_gtk_has_wayland_protocols = true
+  endif
 endif
 
 # webdav
