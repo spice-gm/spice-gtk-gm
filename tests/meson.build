@@ -1,9 +1,9 @@
 tests_sources = [
-    'util.c',
-    'coroutine.c',
-    'session.c',
-    'uri.c',
-    'file-transfer.c',
+  'util.c',
+  'coroutine.c',
+  'session.c',
+  'uri.c',
+  'file-transfer.c',
 ]
 
 if spice_gtk_has_phodav

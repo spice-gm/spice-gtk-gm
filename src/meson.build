@@ -349,22 +349,22 @@ if spice_gtk_has_gtk
                                             link_with : spice_client_gtk_lib,
                                             dependencies : [spice_client_glib_dep, spice_gtk_deps])
 
-if spice_gtk_has_introspection
-  #
-  # SpiceClientGtk-3.0.gir
-  #
-  spice_client_gtk_gir = gnome.generate_gir(spice_client_gtk_lib,
-                                            export_packages : 'spice-client-gtk-3.0',
-                                            extra_args : ['--accept-unprefixed'],
-                                            header : 'spice-widget.h',
-                                            includes : ['GObject-2.0', 'Gtk-3.0', spice_client_glib_gir[0]],
-                                            include_directories: spice_gtk_include,
-                                            link_with : spice_client_glib_lib,
-                                            identifier_prefix : 'Spice',
-                                            symbol_prefix : 'spice',
-                                            install : spice_gtk_has_introspection,
-                                            namespace : 'SpiceClientGtk',
-                                            nsversion : '3.0',
-                                            sources : spice_client_gtk_introspection_sources)
+  if spice_gtk_has_introspection
+    #
+    # SpiceClientGtk-3.0.gir
+    #
+    spice_client_gtk_gir = gnome.generate_gir(spice_client_gtk_lib,
+                                              export_packages : 'spice-client-gtk-3.0',
+                                              extra_args : ['--accept-unprefixed'],
+                                              header : 'spice-widget.h',
+                                              includes : ['GObject-2.0', 'Gtk-3.0', spice_client_glib_gir[0]],
+                                              include_directories: spice_gtk_include,
+                                              link_with : spice_client_glib_lib,
+                                              identifier_prefix : 'Spice',
+                                              symbol_prefix : 'spice',
+                                              install : spice_gtk_has_introspection,
+                                              namespace : 'SpiceClientGtk',
+                                              nsversion : '3.0',
+                                              sources : spice_client_gtk_introspection_sources)
   endif
 endif
