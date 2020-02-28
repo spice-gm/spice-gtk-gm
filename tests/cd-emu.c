@@ -239,10 +239,15 @@ static void attach(const void *param)
 
     void *libusb_context_saved = be->libusb_context;
     if (!libusb_enabled) {
+        spice_usb_backend_deregister_hotplug(be);
         be->libusb_context = NULL;
     }
     usb_ch = spice_usb_backend_channel_new(be, SPICE_USBREDIR_CHANNEL(ch));
-    be->libusb_context = libusb_context_saved;
+    if (!libusb_enabled) {
+        be->libusb_context = libusb_context_saved;
+        spice_usb_backend_register_hotplug(be, NULL, test_hotplug_callback, &err);
+        g_assert_null(err);
+    }
     g_assert_nonnull(usb_ch);
 
     for (int loop = 0; loop < 2; loop++) {
