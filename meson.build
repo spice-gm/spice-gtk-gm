@@ -5,7 +5,8 @@ project('spice-gtk', 'c',
          version : run_command('build-aux/git-version-gen', '@0@/.tarball-version'.format(meson.source_root()), check : true).stdout().strip(),
          license : 'LGPLv2.1',
          meson_version : '>= 0.49',
-         default_options : ['buildtype=debugoptimized'])
+         default_options : ['buildtype=debugoptimized',
+                            'warning_level=2'])
 
 meson.add_dist_script('build-aux/meson-dist', meson.project_version(), meson.source_root())
 
@@ -20,8 +21,6 @@ spice_gtk_includedir = spice_gtk_prefix / get_option('includedir')
 spice_gtk_global_cflags = ['-DHAVE_CONFIG_H',
                            '-DSPICE_COMPILATION',
                            '-DG_LOG_DOMAIN="GSpice"',
-                           '-Wall',
-                           '-Wextra',
                            '-Wno-sign-compare',
                            '-Wno-unused-parameter',
                            '-Wno-cast-function-type']
