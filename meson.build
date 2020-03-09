@@ -4,7 +4,8 @@
 project('spice-gtk', 'c',
          version : run_command('build-aux/git-version-gen', '@0@/.tarball-version'.format(meson.source_root()), check : true).stdout().strip(),
          license : 'LGPLv2.1',
-         meson_version : '>= 0.49')
+         meson_version : '>= 0.49',
+         default_options : ['buildtype=debugoptimized'])
 
 meson.add_dist_script('build-aux/meson-dist', meson.project_version(), meson.source_root())
 
