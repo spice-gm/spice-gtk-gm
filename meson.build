@@ -19,7 +19,6 @@ spice_gtk_includedir = spice_gtk_prefix / get_option('includedir')
 spice_gtk_global_cflags = ['-DHAVE_CONFIG_H',
                            '-DSPICE_COMPILATION',
                            '-DG_LOG_DOMAIN="GSpice"',
-                           #'-Werror',
                            '-Wall',
                            '-Wextra',
                            '-Wno-sign-compare',
