@@ -8,7 +8,7 @@ msgid ""
 msgstr ""
 "Project-Id-Version: spice master fr\n"
 "Report-Msgid-Bugs-To: spice-devel@lists.freedesktop.org\n"
-"POT-Creation-Date: 2017-07-12 17:29+0200\n"
+"POT-Creation-Date: 2020-03-11 12:17+0100\n"
 "PO-Revision-Date: 2010-11-25 03:43+0100\n"
 "Last-Translator: Marc-André Lureau <marcandre.lureau@redhat.com>\n"
 "Language-Team: GNOME French Team <gnomefr@traduc.org>\n"
@@ -18,279 +18,276 @@ msgstr ""
 "Content-Transfer-Encoding: 8bit\n"
 "Plural-Forms: nplurals=2; plural=(n > 1);\n"
 
-#: src/channel-main.c:1868
+#: src/channel-main.c:1912
 msgid "The spice agent cancelled the file transfer"
 msgstr ""
 
-#: src/channel-main.c:1872
+#: src/channel-main.c:1916
 msgid "The spice agent reported an error during the file transfer"
 msgstr ""
 
-#: src/channel-main.c:1879
+#: src/channel-main.c:1923
 #, c-format
 msgid ""
 "File transfer failed due to lack of free space on remote machine (%s free, "
 "%s to transfer)"
 msgstr ""
 
-#: src/channel-main.c:1887
+#: src/channel-main.c:1931
 msgid ""
 "User's session is locked and cannot transfer files, unlock it and try again."
 msgstr ""
 
-#: src/channel-main.c:1892
+#: src/channel-main.c:1936
 msgid "Session agent not connected."
 msgstr ""
 
-#: src/channel-main.c:1896
+#: src/channel-main.c:1940
 msgid "File transfer is disabled."
 msgstr ""
 
-#: src/channel-main.c:3133
+#: src/channel-main.c:3350
+#, c-format
 msgid "The file transfer is disabled"
 msgstr ""
 
-#: src/channel-usbredir.c:906
-#, c-format
-msgid "usbredir protocol parse error for %s"
-msgstr ""
-
-#: src/channel-usbredir.c:911
-#, c-format
-msgid "%s rejected by host"
-msgstr ""
-
-#: src/channel-usbredir.c:916
-#, c-format
-msgid "%s disconnected (fatal IO error)"
-msgstr ""
-
-#: src/channel-usbredir.c:920
-#, c-format
-msgid "Unknown error (%d) for %s"
-msgstr ""
-
-#: src/desktop-integration.c:104
+#: src/desktop-integration.c:99
 msgid "Automounting has been inhibited for USB auto-redirecting"
 msgstr ""
 
-#: src/spice-channel.c:1183
+#: src/spice-channel.c:1177
 #, fuzzy
 msgid "Authentication failed"
 msgstr "Authentification"
 
-#: src/spice-channel.c:1201
+#: src/spice-channel.c:1195
 msgid "Authentication failed: password is too long"
 msgstr ""
 
-#: src/spice-channel.c:1206
+#: src/spice-channel.c:1200
 msgid "Authentication failed: wrong password?"
 msgstr ""
 
-#: src/spice-option.c:65
-#, c-format
-msgid "missing color depth, must be 16 or 32"
+#: src/spice-option.c:61
+msgid "--spice-color-depth is deprecated. Use guest's display settings instead"
 msgstr ""
 
 #: src/spice-option.c:81
-#, c-format
-msgid "invalid color depth (%s), must be 16 or 32"
-msgstr ""
-
-#: src/spice-option.c:101
 #, c-format
 msgid ""
 "invalid effect name (%s), must be 'wallpaper', 'font-smooth', 'animation' or "
 "'all'"
 msgstr ""
 
-#: src/spice-option.c:125
+#: src/spice-option.c:105
 #, c-format
 msgid "invalid channel name (%s), valid names: all, %s"
 msgstr ""
 
-#: src/spice-option.c:173
+#: src/spice-option.c:141
 #, c-format
 msgid "Image compression algorithm %s not supported"
 msgstr ""
 
-#: src/spice-option.c:195
+#: src/spice-option.c:163
 msgid "Force the specified channels to be secured"
 msgstr ""
 
-#: src/spice-option.c:197
+#: src/spice-option.c:165
 msgid "Disable guest display effects"
 msgstr ""
 
-#: src/spice-option.c:199
+#: src/spice-option.c:168
 msgid "Guest display color depth (deprecated)"
 msgstr ""
 
-#: src/spice-option.c:201
+#: src/spice-option.c:170
 #, fuzzy
 msgid "Truststore file for secure connections"
 msgstr "fichier truststore pour les connexions sécurisées"
 
-#: src/spice-option.c:201
+#: src/spice-option.c:170
 #, fuzzy
 msgid "<file>"
 msgstr "<nom de fichier>"
 
-#: src/spice-option.c:203
+#: src/spice-option.c:172
 msgid "Subject of the host certificate (field=value pairs separated by commas)"
 msgstr ""
 
-#: src/spice-option.c:203
+#: src/spice-option.c:172
 #, fuzzy
 msgid "<host-subject>"
 msgstr "<hôte>"
 
-#: src/spice-option.c:205
+#: src/spice-option.c:174
 msgid "Disable audio support"
 msgstr ""
 
-#: src/spice-option.c:207
+#: src/spice-option.c:176
 msgid "Enable smartcard support"
 msgstr ""
 
-#: src/spice-option.c:209
+#: src/spice-option.c:178
 msgid ""
 "Certificates to use for software smartcards (field=values separated by "
 "commas)"
 msgstr ""
 
-#: src/spice-option.c:209
+#: src/spice-option.c:178
 msgid "<certificates>"
 msgstr ""
 
-#: src/spice-option.c:211
+#: src/spice-option.c:180
 msgid ""
 "Path to the local certificate database to use for software smartcard "
 "certificates"
 msgstr ""
 
-#: src/spice-option.c:211
+#: src/spice-option.c:180
 msgid "<certificate-db>"
 msgstr ""
 
-#: src/spice-option.c:213
+#: src/spice-option.c:182
 msgid "Disable USB redirection support"
 msgstr ""
 
-#: src/spice-option.c:218
+#: src/spice-option.c:184
 msgid "Filter selecting USB devices to be auto-redirected when plugged in"
 msgstr ""
 
-#: src/spice-option.c:218 src/spice-option.c:220
+#: src/spice-option.c:184 src/spice-option.c:186
 msgid "<filter-string>"
 msgstr ""
 
-#: src/spice-option.c:220
+#: src/spice-option.c:186
 msgid "Filter selecting USB devices to redirect on connect"
 msgstr ""
 
-#: src/spice-option.c:222
+#: src/spice-option.c:188
+msgid "Name of ISO file or CD/DVD device to share"
+msgstr ""
+
+#: src/spice-option.c:188
+msgid "<filename> (repeat allowed)"
+msgstr ""
+
+#: src/spice-option.c:190
 msgid "Image cache size (deprecated)"
 msgstr ""
 
-#: src/spice-option.c:222 src/spice-option.c:224
+#: src/spice-option.c:190 src/spice-option.c:192
 msgid "<bytes>"
 msgstr ""
 
-#: src/spice-option.c:224
+#: src/spice-option.c:192
 msgid "Glz compression history size (deprecated)"
 msgstr ""
 
-#: src/spice-option.c:226
+#: src/spice-option.c:194
 msgid "Shared directory"
 msgstr ""
 
-#: src/spice-option.c:226
+#: src/spice-option.c:194
 msgid "<dir>"
 msgstr ""
 
-#: src/spice-option.c:228
+#: src/spice-option.c:196
 msgid "Preferred image compression algorithm"
 msgstr ""
 
-#: src/spice-option.c:236
+#: src/spice-option.c:204
 msgid "Enable Spice-GTK debugging"
 msgstr ""
 
-#: src/spice-option.c:238
+#: src/spice-option.c:206
 msgid "Display Spice-GTK version information"
 msgstr ""
 
-#: src/spice-option.c:243
+#: src/spice-option.c:211
 msgid "Spice Options:"
 msgstr "Options Spice:"
 
-#: src/spice-option.c:243
+#: src/spice-option.c:211
 #, fuzzy
 msgid "Show Spice Options"
 msgstr "Affiche les options de spice"
 
-#: src/usb-device-manager.c:359 src/usb-device-manager.c:1747
+#: src/usb-device-manager.c:231 src/usb-device-manager.c:1427
+#: src/usb-device-manager.c:1491
 msgid "USB redirection support not compiled in"
 msgstr ""
 
-#: src/usb-device-manager.c:1434
-msgid "Device was not found"
-msgstr ""
-
-#: src/usb-device-manager.c:1450
+#: src/usb-device-manager.c:1135
 msgid "No free USB channel"
 msgstr ""
 
-#: src/usb-device-manager.c:1684
+#: src/usb-device-manager.c:1373
 msgid "USB redirection is disabled"
 msgstr ""
 
-#: src/usb-device-manager.c:1690
+#: src/usb-device-manager.c:1379
 msgid "The connected VM is not configured for USB redirection"
 msgstr ""
 
-#: src/usb-device-manager.c:1712
-msgid "Some USB devices were not found"
-msgstr ""
-
-#: src/usb-device-manager.c:1722
+#: src/usb-device-manager.c:1402
 msgid "Some USB devices are blocked by host policy"
 msgstr ""
 
-#: src/usb-device-manager.c:1740
+#: src/usb-device-manager.c:1420
 msgid "There are no free USB channels"
 msgstr ""
 
-#: src/usb-device-manager.c:1796
-#, c-format
-msgid "%s %s %s at %d-%d"
+#: src/usb-device-widget.c:209
+msgid "Select ISO file or device"
 msgstr ""
 
-#: src/usb-device-widget.c:207
+#: src/usb-device-widget.c:212
+msgid "_Cancel"
+msgstr ""
+
+#: src/usb-device-widget.c:213
+msgid "_Open"
+msgstr ""
+
+#: src/usb-device-widget.c:224
+#, c-format
+msgid "shared CD %s, %s"
+msgstr ""
+
+#: src/usb-device-widget.c:242
+msgid "SPICE CD (empty)"
+msgstr ""
+
+#: src/usb-device-widget.c:269
 msgid "Select USB devices to redirect"
 msgstr ""
 
-#: src/usb-device-widget.c:393
+#: src/usb-device-widget.c:449
+#, c-format
+msgid "Can't redirect: %s"
+msgstr ""
+
+#: src/usb-device-widget.c:470
 #, c-format
 msgid "Select USB devices to redirect (%d free channel)"
 msgid_plural "Select USB devices to redirect (%d free channels)"
 msgstr[0] ""
 msgstr[1] ""
 
-#: src/usb-device-widget.c:439
+#: src/usb-device-widget.c:488
 msgid "Redirecting USB Device..."
 msgstr ""
 
-#: src/usb-device-widget.c:447
+#: src/usb-device-widget.c:496
 msgid "No USB devices detected"
 msgstr ""
 
-#: src/usbutil.c:296
+#: src/usbutil.c:259
 msgid "USB"
 msgstr ""
 
-#: src/usbutil.c:298
+#: src/usbutil.c:261
 msgid "Device"
 msgstr ""
 
