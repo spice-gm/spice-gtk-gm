@@ -1,3 +1,30 @@
+v0.38
+=====
+
+- #108 - Add CD/DVD redirection, to allow mounting ISO images from client.
+- #99 - Fix display scaling with EGL and HiDPI monitors
+- #19 - Fix display corruption on HiDPI
+- #82 - Various clipboard fixes & improvements, related to host/guest races &
+  cltipboard managers
+- [rhbz#1720532] - Fix buffer overflow on sending data with shared-folders
+- [rhbz#1695618] - Fix hang over failed migration
+- API: add spice_display_channel_change_preferred_video_codec_types()
+- Several usbredir related fixes and code improvements
+- Several video stream related fixes and code improvements
+- Several shared-folder related fixes and code improvements
+- file-xfer: fix stuck transfer while transfering multiple big files at once
+- file-xfer: fix possible crash on Windows
+- Migration: Fix metadata swap of channels
+- build-sys: remove autotools (transition to meson completed)
+- Require spice-protocol >= 0.14.1
+- Require libusb >= 1.0.21
+- Translations:
+ - Update Italian
+ - Add Russian
+
+[rhbz#1720532]: https://bugzilla.redhat.com/show_bug.cgi?id=1720532
+[rhbz#1695618]: https://bugzilla.redhat.com/show_bug.cgi?id=1695618
+
 v0.37
 =====
 
