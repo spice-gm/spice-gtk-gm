@@ -85,9 +85,6 @@ static void channel_set_handlers(SpiceChannelClass *klass);
 
 static void spice_record_channel_set_capabilities(SpiceChannel *channel)
 {
-    if (!g_getenv("SPICE_DISABLE_CELT"))
-        if (snd_codec_is_capable(SPICE_AUDIO_DATA_MODE_CELT_0_5_1, SND_CODEC_ANY_FREQUENCY))
-            spice_channel_set_capability(SPICE_CHANNEL(channel), SPICE_RECORD_CAP_CELT_0_5_1);
     if (!g_getenv("SPICE_DISABLE_OPUS"))
         if (snd_codec_is_capable(SPICE_AUDIO_DATA_MODE_OPUS, SND_CODEC_ANY_FREQUENCY))
             spice_channel_set_capability(SPICE_CHANNEL(channel), SPICE_RECORD_CAP_OPUS);
@@ -273,10 +270,6 @@ static int spice_record_desired_mode(SpiceChannel *channel, int frequency)
         snd_codec_is_capable(SPICE_AUDIO_DATA_MODE_OPUS, frequency) &&
         spice_channel_test_capability(channel, SPICE_RECORD_CAP_OPUS)) {
         return SPICE_AUDIO_DATA_MODE_OPUS;
-    } else if (!g_getenv("SPICE_DISABLE_CELT") &&
-        snd_codec_is_capable(SPICE_AUDIO_DATA_MODE_CELT_0_5_1, frequency) &&
-        spice_channel_test_capability(channel, SPICE_RECORD_CAP_CELT_0_5_1)) {
-        return SPICE_AUDIO_DATA_MODE_CELT_0_5_1;
     } else {
         return SPICE_AUDIO_DATA_MODE_RAW;
     }

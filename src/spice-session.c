@@ -2672,12 +2672,14 @@ static void spice_session_set_shared_dir(SpiceSession *session, const gchar *dir
 G_GNUC_INTERNAL
 const gchar* spice_audio_data_mode_to_string(gint mode)
 {
+    G_GNUC_BEGIN_IGNORE_DEPRECATIONS
     static const char *str[] = {
         [ SPICE_AUDIO_DATA_MODE_INVALID ] = "invalid",
         [ SPICE_AUDIO_DATA_MODE_RAW ] = "raw",
         [ SPICE_AUDIO_DATA_MODE_CELT_0_5_1 ] = "celt",
         [ SPICE_AUDIO_DATA_MODE_OPUS ] = "opus",
     };
+    G_GNUC_END_IGNORE_DEPRECATIONS
     return (mode >= 0 && mode < G_N_ELEMENTS(str)) ? str[mode] : "unknown audio codec";
 }
 

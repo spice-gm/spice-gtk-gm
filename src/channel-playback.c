@@ -89,9 +89,6 @@ static void channel_set_handlers(SpiceChannelClass *klass);
 
 static void spice_playback_channel_set_capabilities(SpiceChannel *channel)
 {
-    if (!g_getenv("SPICE_DISABLE_CELT"))
-        if (snd_codec_is_capable(SPICE_AUDIO_DATA_MODE_CELT_0_5_1, SND_CODEC_ANY_FREQUENCY))
-            spice_channel_set_capability(SPICE_CHANNEL(channel), SPICE_PLAYBACK_CAP_CELT_0_5_1);
     if (!g_getenv("SPICE_DISABLE_OPUS"))
         if (snd_codec_is_capable(SPICE_AUDIO_DATA_MODE_OPUS, SND_CODEC_ANY_FREQUENCY))
             spice_channel_set_capability(SPICE_CHANNEL(channel), SPICE_PLAYBACK_CAP_OPUS);
@@ -347,7 +344,6 @@ static void playback_handle_mode(SpiceChannel *channel, SpiceMsgIn *in)
     c->mode = mode->mode;
     switch (c->mode) {
     case SPICE_AUDIO_DATA_MODE_RAW:
-    case SPICE_AUDIO_DATA_MODE_CELT_0_5_1:
     case SPICE_AUDIO_DATA_MODE_OPUS:
         break;
     default:
