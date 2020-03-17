@@ -19,7 +19,6 @@ ignore_headers = [
   'spice-gstaudio.h',
   'spice-gtk-session-priv.h',
   'spice-marshal.h',
-  'spice-pulse.h',
   'spice-session-priv.h',
   'spice-uri-priv.h',
   'spice-util-priv.h',

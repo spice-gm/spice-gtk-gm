@@ -164,16 +164,6 @@ if d.found()
   endif
 endif
 
-# pulse
-spice_gtk_has_pulse = false
-d = dependency('libpulse-mainloop-glib', required: get_option('pulse'))
-if d.found()
-  warning('PulseAudio backend is deprecated and will be removed in a future release')
-  spice_glib_deps += d
-  spice_gtk_config_data.set('HAVE_PULSE', '1')
-  spice_gtk_has_pulse = true
-endif
-
 gstreamer_version = '1.10'
 gstreamer_version_info = '>= @0@'.format(gstreamer_version)
 deps = ['gstreamer-1.0', 'gstreamer-base-1.0', 'gstreamer-app-1.0', 'gstreamer-audio-1.0', 'gstreamer-video-1.0']

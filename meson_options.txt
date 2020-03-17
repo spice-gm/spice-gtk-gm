@@ -6,10 +6,6 @@ option('webdav',
     type : 'feature',
     description: 'Enable webdav support')
 
-option('pulse',
-    type : 'feature',
-    description: 'Enable the PulseAudio backend')
-
 option('builtin-mjpeg',
     type : 'boolean',
     value : true,

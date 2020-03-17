@@ -41,10 +41,6 @@
 #include "spice-session-priv.h"
 #include "spice-channel-priv.h"
 #include "spice-audio-priv.h"
-
-#ifdef HAVE_PULSE
-#include "spice-pulse.h"
-#endif
 #include "spice-gstaudio.h"
 
 G_DEFINE_ABSTRACT_TYPE_WITH_PRIVATE(SpiceAudio, spice_audio, G_TYPE_OBJECT)
@@ -236,17 +232,12 @@ SpiceAudio *spice_audio_new_priv(SpiceSession *session, GMainContext *context,
     if (name == NULL)
         name = g_get_application_name();
 
-#ifdef HAVE_PULSE
-    self = SPICE_AUDIO(spice_pulse_new(session, context, name));
-#endif
-    if (!self)
-        self = SPICE_AUDIO(spice_gstaudio_new(session, context, name));
-    if (!self)
-        return NULL;
-
-    spice_g_signal_connect_object(session, "notify::enable-audio", G_CALLBACK(session_enable_audio), self, 0);
-    spice_g_signal_connect_object(session, "channel-new", G_CALLBACK(channel_new), self, G_CONNECT_AFTER);
-    update_audio_channels(self, session);
+    self = SPICE_AUDIO(spice_gstaudio_new(session, context, name));
+    if (self != NULL) {
+        spice_g_signal_connect_object(session, "notify::enable-audio", G_CALLBACK(session_enable_audio), self, 0);
+        spice_g_signal_connect_object(session, "channel-new", G_CALLBACK(channel_new), self, G_CONNECT_AFTER);
+        update_audio_channels(self, session);
+    }
 
     return self;
 }

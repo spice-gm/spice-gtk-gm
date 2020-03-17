@@ -137,11 +137,6 @@ if spice_gtk_has_phodav
                                 'giopipe.h']
 endif
 
-if spice_gtk_has_pulse
-  spice_client_glib_sources += ['spice-pulse.c',
-                                'spice-pulse.h']
-endif
-
 if spice_gtk_coroutine == 'gthread'
   spice_client_glib_sources += 'coroutine_gthread.c'
 elif spice_gtk_coroutine == 'ucontext'
