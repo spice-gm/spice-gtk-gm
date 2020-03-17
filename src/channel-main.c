@@ -283,13 +283,13 @@ static void spice_main_get_property(GObject    *object,
     switch (prop_id) {
     case PROP_MOUSE_MODE:
         g_value_set_int(value, c->mouse_mode);
-	break;
+    break;
     case PROP_AGENT_CONNECTED:
         g_value_set_boolean(value, c->agent_connected);
-	break;
+    break;
     case PROP_AGENT_CAPS_0:
         g_value_set_int(value, c->agent_caps[0]);
-	break;
+    break;
     case PROP_DISPLAY_DISABLE_WALLPAPER:
         g_value_set_boolean(value, c->display_disable_wallpaper);
         break;
@@ -312,8 +312,8 @@ static void spice_main_get_property(GObject    *object,
         g_value_set_int(value, spice_main_get_max_clipboard(self));
         break;
     default:
-	G_OBJECT_WARN_INVALID_PROPERTY_ID(object, prop_id, pspec);
-	break;
+        G_OBJECT_WARN_INVALID_PROPERTY_ID(object, prop_id, pspec);
+        break;
     }
 }
 
@@ -346,8 +346,8 @@ static void spice_main_set_property(GObject *gobject, guint prop_id,
         spice_main_set_max_clipboard(self, g_value_get_int(value));
         break;
     default:
-	G_OBJECT_WARN_INVALID_PROPERTY_ID(gobject, prop_id, pspec);
-	break;
+        G_OBJECT_WARN_INVALID_PROPERTY_ID(gobject, prop_id, pspec);
+        break;
     }
 }
 
@@ -2051,9 +2051,10 @@ static void main_agent_handle_msg(SpiceChannel *channel,
         g_coroutine_signal_emit(self, signals[SPICE_MAIN_CLIPBOARD_SELECTION], 0, selection,
                                 cb->type, cb->data, msg->size - sizeof(VDAgentClipboard));
 
-       if (selection == VD_AGENT_CLIPBOARD_SELECTION_CLIPBOARD)
-           g_coroutine_signal_emit(self, signals[SPICE_MAIN_CLIPBOARD], 0,
-                              cb->type, cb->data, msg->size - sizeof(VDAgentClipboard));
+        if (selection == VD_AGENT_CLIPBOARD_SELECTION_CLIPBOARD) {
+            g_coroutine_signal_emit(self, signals[SPICE_MAIN_CLIPBOARD], 0,
+                                    cb->type, cb->data, msg->size - sizeof(VDAgentClipboard));
+        }
         break;
     }
     case VD_AGENT_CLIPBOARD_GRAB:
@@ -2075,10 +2076,11 @@ static void main_agent_handle_msg(SpiceChannel *channel,
         }
 
         g_coroutine_signal_emit(self, signals[SPICE_MAIN_CLIPBOARD_SELECTION_GRAB], 0, selection,
-                          (guint8*)payload, msg->size / sizeof(uint32_t), &ret);
-        if (selection == VD_AGENT_CLIPBOARD_SELECTION_CLIPBOARD)
+                                (guint8*)payload, msg->size / sizeof(uint32_t), &ret);
+        if (selection == VD_AGENT_CLIPBOARD_SELECTION_CLIPBOARD) {
             g_coroutine_signal_emit(self, signals[SPICE_MAIN_CLIPBOARD_GRAB], 0,
-                              payload, msg->size / sizeof(uint32_t), &ret);
+                                    payload, msg->size / sizeof(uint32_t), &ret);
+        }
         break;
     }
     case VD_AGENT_CLIPBOARD_REQUEST:
@@ -2086,11 +2088,11 @@ static void main_agent_handle_msg(SpiceChannel *channel,
         gboolean ret;
         VDAgentClipboardRequest *req = payload;
         g_coroutine_signal_emit(self, signals[SPICE_MAIN_CLIPBOARD_SELECTION_REQUEST], 0, selection,
-                          req->type, &ret);
+                                req->type, &ret);
 
         if (selection == VD_AGENT_CLIPBOARD_SELECTION_CLIPBOARD)
             g_coroutine_signal_emit(self, signals[SPICE_MAIN_CLIPBOARD_REQUEST], 0,
-                              req->type, &ret);
+                                    req->type, &ret);
         break;
     }
     case VD_AGENT_CLIPBOARD_RELEASE:
@@ -2333,7 +2335,7 @@ static gboolean migrate_connect(gpointer data)
     host = (char*)info->host_data;
 
     if (info->cert_subject_size == 0 ||
-               strlen((const char*)info->cert_subject_data) == 0) {
+        strlen((const char*)info->cert_subject_data) == 0) {
         /* only verify hostname if no cert subject */
         g_object_set(mig->session, "verify", SPICE_SESSION_VERIFY_HOSTNAME, NULL);
     } else {
@@ -2690,7 +2692,7 @@ void spice_main_update_display(SpiceMainChannel *channel, int id,
  * Since: 0.35
  **/
 void spice_main_channel_update_display(SpiceMainChannel *channel, int id, int x, int y, int width,
-                               int height, gboolean update)
+                                       int height, gboolean update)
 {
     SpiceMainChannelPrivate *c;
 
