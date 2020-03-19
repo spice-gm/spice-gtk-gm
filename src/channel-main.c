@@ -1891,6 +1891,7 @@ static void file_xfer_read_async_cb(GObject *source_object,
 
 /* coroutine context */
 static void main_agent_handle_xfer_status(SpiceMainChannel *channel,
+                                          const VDAgentMessage *msg_hdr,
                                           VDAgentFileXferStatusMessage *msg)
 {
     SpiceFileTransferTask *xfer_task;
@@ -1917,8 +1918,17 @@ static void main_agent_handle_xfer_status(SpiceMainChannel *channel,
                                     _("The spice agent reported an error during the file transfer"));
         break;
     case VD_AGENT_FILE_XFER_STATUS_NOT_ENOUGH_SPACE: {
-        uint64_t *free_space = SPICE_ALIGNED_CAST(uint64_t *, msg->data);
-        gchar *free_space_str = g_format_size(*free_space);
+        const VDAgentFileXferStatusNotEnoughSpace *err =
+            (VDAgentFileXferStatusNotEnoughSpace*) msg->data;
+        if (!test_agent_cap(channel, VD_AGENT_CAP_FILE_XFER_DETAILED_ERRORS) ||
+            msg_hdr->size < sizeof(*msg) + sizeof(*err)) {
+            error =
+                g_error_new(SPICE_CLIENT_ERROR, SPICE_CLIENT_ERROR_FAILED,
+                            _("File transfer failed due to lack of free space on remote machine"));
+            break;
+        }
+
+        gchar *free_space_str = g_format_size(err->disk_free_space);
         gchar *file_size_str = g_format_size(spice_file_transfer_task_get_total_bytes(xfer_task));
         error = g_error_new(SPICE_CLIENT_ERROR, SPICE_CLIENT_ERROR_FAILED,
                             _("File transfer failed due to lack of free space on remote machine "
@@ -2112,7 +2122,7 @@ static void main_agent_handle_msg(SpiceChannel *channel,
         break;
     }
     case VD_AGENT_FILE_XFER_STATUS:
-        main_agent_handle_xfer_status(self, payload);
+        main_agent_handle_xfer_status(self, msg, payload);
         break;
     default:
         g_warning("unhandled agent message type: %u (%s), size %u",

@@ -81,7 +81,7 @@ endforeach
 #
 # check for mandatory dependencies
 #
-spice_protocol_version='>= 0.14.1'
+spice_protocol_version='>= 0.14.2'
 
 glib_version = '2.46'
 glib_version_info = '>= @0@'.format(glib_version)
