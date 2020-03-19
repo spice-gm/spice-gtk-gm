@@ -1912,10 +1912,26 @@ static void main_agent_handle_xfer_status(SpiceMainChannel *channel,
         error = g_error_new_literal(SPICE_CLIENT_ERROR, SPICE_CLIENT_ERROR_FAILED,
                                     _("The spice agent cancelled the file transfer"));
         break;
-    case VD_AGENT_FILE_XFER_STATUS_ERROR:
-        error = g_error_new_literal(SPICE_CLIENT_ERROR, SPICE_CLIENT_ERROR_FAILED,
-                                    _("The spice agent reported an error during the file transfer"));
+    case VD_AGENT_FILE_XFER_STATUS_ERROR: {
+        const VDAgentFileXferStatusError *err = (VDAgentFileXferStatusError *) msg->data;
+        if (test_agent_cap(channel, VD_AGENT_CAP_FILE_XFER_DETAILED_ERRORS) &&
+            msg_hdr->size >= sizeof(*msg) + sizeof(*err) &&
+            err->error_type == VD_AGENT_FILE_XFER_STATUS_ERROR_GLIB_IO) {
+
+            switch (err->error_code) {
+            case G_IO_ERROR_INVALID_FILENAME:
+                error = g_error_new_literal(G_IO_ERROR, err->error_code,
+                                            _("Invalid filename of transferred file"));
+                break;
+            }
+        }
+        if (error == NULL) {
+            error = g_error_new_literal(SPICE_CLIENT_ERROR, SPICE_CLIENT_ERROR_FAILED,
+                                        _("The spice agent reported an error "
+                                          "during the file transfer"));
+        }
         break;
+    }
     case VD_AGENT_FILE_XFER_STATUS_NOT_ENOUGH_SPACE: {
         const VDAgentFileXferStatusNotEnoughSpace *err =
             (VDAgentFileXferStatusNotEnoughSpace*) msg->data;
