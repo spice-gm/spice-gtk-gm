@@ -225,7 +225,7 @@ static const char *agent_caps[] = {
     [ VD_AGENT_CAP_CLIPBOARD_NO_RELEASE_ON_REGRAB ] = "no release on re-grab",
     [ VD_AGENT_CAP_CLIPBOARD_GRAB_SERIAL ] = "clipboard grab serial",
 };
-#define NAME(_a, _i) ((_i) < SPICE_N_ELEMENTS(_a) ? (_a[(_i)] ?: "?") : "?")
+#define NAME(_a, _i) ((_i) < SPICE_N_ELEMENTS(_a) && _a[_i] != NULL ? _a[_i] : "?")
 
 /* ------------------------------------------------------------------ */
 
