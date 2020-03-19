@@ -1384,7 +1384,8 @@ static void agent_clipboard_grab(SpiceMainChannel *channel, guint selection,
     }
 
     if (test_agent_cap(channel, VD_AGENT_CAP_CLIPBOARD_GRAB_SERIAL)) {
-        *(uint32_t *)grab = GUINT32_TO_LE(c->clipboard_serial[selection]++);
+        uint32_t serial = c->clipboard_serial[selection]++;
+        *(uint32_t *)grab = GUINT32_TO_LE(serial);
         grab = (void *)grab + sizeof(uint32_t);
     }
 
