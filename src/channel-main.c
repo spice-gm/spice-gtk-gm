@@ -283,13 +283,13 @@ static void spice_main_get_property(GObject    *object,
     switch (prop_id) {
     case PROP_MOUSE_MODE:
         g_value_set_int(value, c->mouse_mode);
-    break;
+        break;
     case PROP_AGENT_CONNECTED:
         g_value_set_boolean(value, c->agent_connected);
-    break;
+        break;
     case PROP_AGENT_CAPS_0:
         g_value_set_int(value, c->agent_caps[0]);
-    break;
+        break;
     case PROP_DISPLAY_DISABLE_WALLPAPER:
         g_value_set_boolean(value, c->display_disable_wallpaper);
         break;
