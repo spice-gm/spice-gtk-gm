@@ -19,6 +19,8 @@ variables:
               mingw64-gstreamer1-plugins-base mingw64-gstreamer1-plugins-good
               mingw64-usbredir mingw32-usbredir
 
+  GIT_SUBMODULE_STRATEGY: recursive
+
 fedora:
   artifacts:
     paths:
