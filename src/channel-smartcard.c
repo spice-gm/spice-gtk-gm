@@ -345,7 +345,7 @@ send_msg_generic_with_data(SpiceSmartcardChannel *channel, VReader *reader,
 
     msg_out = spice_msg_out_new(SPICE_CHANNEL(channel),
                                 SPICE_MSGC_SMARTCARD_DATA);
-    msg_out->marshallers->msgc_smartcard_header(msg_out->marshaller, &header);
+    msg_out->marshallers->msgc_smartcard_data(msg_out->marshaller, &header);
     if ((data != NULL) && (data_len != 0)) {
         spice_marshaller_add(msg_out->marshaller, data, data_len);
     }
