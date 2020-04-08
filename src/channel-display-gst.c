@@ -1,4 +1,3 @@
-/* -*- Mode: C; c-basic-offset: 4; indent-tabs-mode: nil -*- */
 /*
    Copyright (C) 2015-2016, 2019 CodeWeavers, Inc
 

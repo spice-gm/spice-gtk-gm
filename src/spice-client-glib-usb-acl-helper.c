@@ -1,4 +1,3 @@
-/* -*- Mode: C; c-basic-offset: 4; indent-tabs-mode: nil -*- */
 /*
    Copyright (C) 2011,2012 Red Hat, Inc.
    Copyright (C) 2009 Kay Sievers <kay.sievers@vrfy.org>

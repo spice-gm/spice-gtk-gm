@@ -1,4 +1,3 @@
-/* -*- Mode: C; c-basic-offset: 4; indent-tabs-mode: nil -*- */
 /*
    Copyright (C) 2010 Red Hat, Inc.
    Copyright © 2006-2010 Collabora Ltd. <http://www.collabora.co.uk/>

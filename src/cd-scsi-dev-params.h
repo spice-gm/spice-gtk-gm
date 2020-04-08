@@ -1,4 +1,3 @@
-/* -*- Mode: C; c-basic-offset: 4; indent-tabs-mode: nil -*- */
 /*
    CD SCSI device parameters
 
