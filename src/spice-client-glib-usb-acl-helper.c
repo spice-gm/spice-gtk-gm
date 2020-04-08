@@ -155,25 +155,6 @@ static void cleanup(void)
         g_main_loop_quit(loop);
 }
 
-/* Not available in polkit < 0.101 */
-#ifndef HAVE_POLKIT_AUTHORIZATION_RESULT_GET_DISMISSED
-static gboolean
-polkit_authorization_result_get_dismissed(PolkitAuthorizationResult *result)
-{
-    gboolean ret;
-    PolkitDetails *details;
-
-    g_return_val_if_fail(POLKIT_IS_AUTHORIZATION_RESULT(result), FALSE);
-
-    ret = FALSE;
-    details = polkit_authorization_result_get_details(result);
-    if (details != NULL && polkit_details_lookup(details, "polkit.dismissed"))
-        ret = TRUE;
-
-    return ret;
-}
-#endif
-
 static void check_authorization_cb(PolkitAuthority *authority,
                                    GAsyncResult *res, gpointer data)
 {
@@ -289,21 +270,6 @@ static void stdin_read_complete(GObject *src, GAsyncResult *res, gpointer data)
     }
     g_free(s);
 }
-
-/* Fix for polkit 0.97 and later */
-#ifndef HAVE_POLKIT_AUTHORITY_GET_SYNC
-static PolkitAuthority *
-polkit_authority_get_sync (GCancellable *cancellable, GError **error)
-{
-    PolkitAuthority *authority;
-
-    authority = polkit_authority_get ();
-    if (!authority)
-        g_set_error (error, 0, 0, "failed to get the PolicyKit authority");
-
-    return authority;
-}
-#endif
 
 #ifndef HAVE_CLEARENV
 extern char **environ;

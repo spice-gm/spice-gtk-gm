@@ -193,14 +193,9 @@ endif
 
 # polkit
 spice_gtk_has_polkit = false
-d = dependency('polkit-gobject-1', version : '>= 0.96', required : get_option('polkit'))
+d = dependency('polkit-gobject-1', version : '>= 0.101', required : get_option('polkit'))
 if d.found()
   spice_gtk_policy_dir = d.get_pkgconfig_variable('policydir')
-  foreach func : ['polkit_authority_get_sync', 'polkit_authorization_result_get_dismissed']
-    if compiler.has_function(func, dependencies : d)
-      spice_gtk_config_data.set('HAVE_@0@'.format(func.to_upper()), '1')
-    endif
-  endforeach
 
   # TODO:  With 'auto', we should just disable polkit support if this is missing.
   if not compiler.has_function('acl_get_file')
