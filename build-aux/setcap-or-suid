@@ -1,0 +1,10 @@
+#!/bin/sh
+
+file="$DESTDIR$1"
+caps="$2"
+
+setcap "$caps" "$file" && exit 0
+
+echo "Warning: setcap failed, falling back on suid!" >&2
+chown root:root "$file"
+chmod u+s "$file"

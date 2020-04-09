@@ -234,10 +234,10 @@ if spice_gtk_has_polkit
              include_directories : spice_gtk_include,
              install : true,
              install_dir : spice_gtk_usb_acl_helper_dir,
-             install_mode : ['rwsr-xr-x', 'root', 'root'],
              dependencies : spice_acl_deps,
              pie : spice_gtk_has_pie
             )
+  meson.add_install_script('../build-aux/setcap-or-suid', spice_gtk_usb_acl_helper_dir / 'spice-client-glib-usb-acl-helper', 'cap_fowner+ep')
 endif
 
 
