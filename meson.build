@@ -191,6 +191,12 @@ if d1.found() and d2.found() and d3.found()
   spice_gtk_has_usbredir = true
 endif
 
+d = dependency('libcap-ng', required : get_option('libcap-ng'))
+if d.found()
+  spice_gtk_config_data.set('USE_LIBCAP_NG', '1')
+  spice_acl_deps += d
+endif
+
 # polkit
 spice_gtk_has_polkit = false
 d = dependency('polkit-gobject-1', version : '>= 0.101', required : get_option('polkit'))

@@ -32,6 +32,9 @@
 #include <gio/gunixinputstream.h>
 #include <polkit/polkit.h>
 #include <sys/acl.h>
+#ifdef USE_LIBCAP_NG
+#include <cap-ng.h>
+#endif
 
 #define FATAL_ERROR(...) \
     do { \
@@ -288,14 +291,35 @@ int main(void)
     pid_t parent_pid;
     GInputStream *stdin_unix_stream;
 
-  /* Nuke the environment to get a well-known and sanitized
-   * environment to avoid attacks via e.g. the DBUS_SYSTEM_BUS_ADDRESS
-   * environment variable and similar.
-   */
+    /* Nuke the environment to get a well-known and sanitized
+     * environment to avoid attacks via e.g. the DBUS_SYSTEM_BUS_ADDRESS
+     * environment variable and similar.
+     */
     if (clearenv () != 0) {
         FATAL_ERROR("Error clearing environment: %s\n", g_strerror (errno));
         return 1;
     }
+
+#ifdef USE_LIBCAP_NG
+    /* When SUID root, keep only CAP_FOWNER and change credentials */
+    if (geteuid() == 0 && getuid() != geteuid()) {
+        int rv;
+
+        capng_clear(CAPNG_SELECT_BOTH);
+        rv = capng_update(CAPNG_ADD, CAPNG_EFFECTIVE|CAPNG_PERMITTED, CAP_FOWNER);
+        if (rv < 0) {
+            FATAL_ERROR("Failed to update the capabilities: %d\n", rv);
+            return 1;
+        }
+
+        rv = capng_change_id(getuid(), getgid(), CAPNG_CLEAR_BOUNDING);
+        if (rv < 0) {
+            FATAL_ERROR("Failed to drop capabilities: %d\n", rv);
+            return 1;
+        }
+    }
+#endif
+
 
     loop = g_main_loop_new(NULL, FALSE);
 

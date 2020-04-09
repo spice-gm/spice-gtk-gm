@@ -15,6 +15,10 @@ option('usbredir',
     type : 'feature',
     description : 'Enable usbredir support')
 
+option('libcap-ng',
+       type : 'feature',
+       description: 'Enable libcap-ng support for the USB acl helper')
+
 option('polkit',
     type : 'feature',
     description : 'Enable PolicyKit support for the USB acl helper')
