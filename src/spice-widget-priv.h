@@ -95,6 +95,7 @@ struct _SpiceDisplayPrivate {
     SpiceSmartcardChannel   *smartcard;
 
     enum SpiceMouseMode     mouse_mode;
+    int                     mouse_button_mask;
     int                     mouse_grab_active;
     bool                    mouse_have_pointer;
     GdkCursor               *mouse_cursor;

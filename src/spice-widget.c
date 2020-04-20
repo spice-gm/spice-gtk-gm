@@ -1953,7 +1953,21 @@ static int button_gdk_to_spice(guint gdk)
     };
 
     if (gdk < SPICE_N_ELEMENTS(map)) {
-        return map [ gdk ];
+        return map[gdk];
+    }
+    return 0;
+}
+
+static int button_gdk_to_spice_mask(guint gdk)
+{
+    static const int map[] = {
+        [1] = SPICE_MOUSE_BUTTON_MASK_LEFT,
+        [2] = SPICE_MOUSE_BUTTON_MASK_MIDDLE,
+        [3] = SPICE_MOUSE_BUTTON_MASK_RIGHT,
+    };
+
+    if (gdk < SPICE_N_ELEMENTS(map)) {
+        return map[gdk];
     }
     return 0;
 }
@@ -2159,11 +2173,17 @@ static gboolean button_event(GtkWidget *widget, GdkEventButton *button)
         spice_inputs_channel_button_press(d->inputs,
                                           button_gdk_to_spice(button->button),
                                           button_mask_gdk_to_spice(button->state));
+        /* Save the mouse button mask to couple it with Wayland movement */
+        d->mouse_button_mask = button_mask_gdk_to_spice(button->state);
+        d->mouse_button_mask |= button_gdk_to_spice_mask(button->button);
         break;
     case GDK_BUTTON_RELEASE:
         spice_inputs_channel_button_release(d->inputs,
                                             button_gdk_to_spice(button->button),
                                             button_mask_gdk_to_spice(button->state));
+        /* Save the mouse button mask to couple it with Wayland movement */
+        d->mouse_button_mask = button_mask_gdk_to_spice(button->state);
+        d->mouse_button_mask ^= button_gdk_to_spice_mask(button->button);
         break;
     default:
         break;
