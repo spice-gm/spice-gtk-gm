@@ -33,7 +33,13 @@
 #endif
 #ifdef GDK_WINDOWING_WAYLAND
 #include <gdk/gdkwayland.h>
+#ifdef HAVE_WAYLAND_PROTOCOLS
+#include "pointer-constraints-unstable-v1-client-protocol.h"
+#include "relative-pointer-unstable-v1-client-protocol.h"
+#include "wayland-extensions.h"
 #endif
+#endif
+
 #ifdef G_OS_WIN32
 #include <windows.h>
 #include <dinput.h>
@@ -697,6 +703,11 @@ static void spice_display_init(SpiceDisplay *display)
 
     d->grabseq = spice_grab_sequence_new_from_string("Control_L+Alt_L");
     d->activeseq = g_new0(gboolean, d->grabseq->nkeysyms);
+
+#ifdef HAVE_WAYLAND_PROTOCOLS
+    if GDK_IS_WAYLAND_DISPLAY(gtk_widget_get_display(widget))
+        spice_wayland_extensions_init(widget);
+#endif
 }
 
 static void
@@ -899,7 +910,7 @@ static void ungrab_keyboard(SpiceDisplay *display)
      * We simply issue a gdk_seat_ungrab() followed immediately by another
      * gdk_seat_grab() on the pointer if the pointer grab is to be kept.
      */
-    if (GDK_IS_WAYLAND_DISPLAY(gdk_display_get_default())) {
+    if (GDK_IS_WAYLAND_DISPLAY(gtk_widget_get_display(GTK_WIDGET(display)))) {
         SpiceDisplayPrivate *d = display->priv;
 
         gdk_seat_ungrab(seat);
@@ -1054,15 +1065,49 @@ error:
 }
 #endif
 
+#ifdef HAVE_WAYLAND_PROTOCOLS
+static void
+relative_pointer_handle_relative_motion(void *data,
+                                        struct zwp_relative_pointer_v1 *pointer,
+                                        uint32_t time_hi,
+                                        uint32_t time_lo,
+                                        wl_fixed_t dx_w,
+                                        wl_fixed_t dy_w,
+                                        wl_fixed_t dx_unaccel_w,
+                                        wl_fixed_t dy_unaccel_w)
+{
+    SpiceDisplay *display = SPICE_DISPLAY(data);
+    GtkWidget *widget = GTK_WIDGET(display);
+    SpiceDisplayPrivate *d = display->priv;
+
+    if (!d->inputs)
+        return;
+    if (d->disable_inputs)
+        return;
+    /* mode changed to client in the meantime */
+    if (d->mouse_mode != SPICE_MOUSE_MODE_SERVER) {
+        spice_wayland_extensions_disable_relative_pointer(widget);
+        spice_wayland_extensions_unlock_pointer(widget);
+        return;
+    }
+
+    spice_inputs_channel_motion(d->inputs,
+                                wl_fixed_to_int(dx_unaccel_w),
+                                wl_fixed_to_int(dy_unaccel_w),
+                                d->mouse_button_mask);
+}
+#endif
+
 static gboolean do_pointer_grab(SpiceDisplay *display)
 {
+    GtkWidget *widget = GTK_WIDGET(display);
     SpiceDisplayPrivate *d = display->priv;
-    GdkWindow *window = GDK_WINDOW(gtk_widget_get_window(GTK_WIDGET(display)));
+    GdkWindow *window = GDK_WINDOW(gtk_widget_get_window(widget));
     GdkGrabStatus status;
     GdkCursor *blank = spice_display_get_blank_cursor(display);
     gboolean grab_successful = FALSE;
 
-    if (!gtk_widget_get_realized(GTK_WIDGET(display)))
+    if (!gtk_widget_get_realized(widget))
         goto end;
 
 #ifdef G_OS_WIN32
@@ -1079,6 +1124,14 @@ static gboolean do_pointer_grab(SpiceDisplay *display)
                            NULL,
                            NULL,
                            NULL);
+
+#ifdef HAVE_WAYLAND_PROTOCOLS
+    if (GDK_IS_WAYLAND_DISPLAY(gtk_widget_get_display(widget))) {
+        spice_wayland_extensions_enable_relative_pointer(widget, relative_pointer_handle_relative_motion);
+        spice_wayland_extensions_lock_pointer(widget, NULL, NULL);
+    }
+#endif
+
     grab_successful = (status == GDK_GRAB_SUCCESS);
     if (!grab_successful) {
         d->mouse_grab_active = false;
@@ -1203,7 +1256,8 @@ static void ungrab_pointer(SpiceDisplay *display)
      * immediately by another gdk_seat_grab() on the keyboard if the
      * keyboard grab is to be kept.
      */
-    if (GDK_IS_WAYLAND_DISPLAY(gdk_display_get_default())) {
+    if (GDK_IS_WAYLAND_DISPLAY(gtk_widget_get_display(GTK_WIDGET(display)))) {
+        GtkWidget *widget = GTK_WIDGET(display);
         SpiceDisplayPrivate *d = display->priv;
 
         gdk_seat_ungrab(seat);
@@ -1212,7 +1266,7 @@ static void ungrab_pointer(SpiceDisplay *display)
             GdkGrabStatus status;
 
             status = gdk_seat_grab(seat,
-                                   gtk_widget_get_window(GTK_WIDGET(display)),
+                                   gtk_widget_get_window(widget),
                                    GDK_SEAT_CAPABILITY_KEYBOARD,
                                    FALSE,
                                    NULL,
@@ -1223,6 +1277,12 @@ static void ungrab_pointer(SpiceDisplay *display)
                 g_warning("keyboard grab failed %u", status);
                 d->keyboard_grab_active = false;
             }
+#ifdef HAVE_WAYLAND_PROTOCOLS
+            if (d->mouse_mode == SPICE_MOUSE_MODE_SERVER) {
+                spice_wayland_extensions_disable_relative_pointer(widget);
+                spice_wayland_extensions_unlock_pointer(widget);
+            }
+#endif
         }
 
         return;
@@ -1859,21 +1919,8 @@ static gboolean leave_event(GtkWidget *widget, GdkEventCrossing *crossing G_GNUC
 
     DISPLAY_DEBUG(display, "%s", __FUNCTION__);
 
-    if (d->mouse_grab_active) {
-#ifdef GDK_WINDOWING_WAYLAND
-        /* On Wayland, there is no active pointer grab, so once the pointer
-         * has left the window, the events are routed to the window with
-         * pointer focus instead of ours, in which case we should just
-         * ungrab to avoid nasty side effects. */
-        if (GDK_IS_WAYLAND_DISPLAY(gdk_display_get_default())) {
-            GdkWindow *window = gtk_widget_get_window(widget);
-
-            if (window == crossing->window)
-                try_mouse_ungrab(display);
-        }
-#endif
+    if (d->mouse_grab_active)
         return true;
-    }
 
     d->mouse_have_pointer = false;
     spice_gtk_session_set_mouse_has_pointer(d->gtk_session, false);
