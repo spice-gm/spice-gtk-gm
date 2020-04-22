@@ -186,9 +186,14 @@ d1 = dependency('libusbredirparser-0.5', version: usbredir_version_info, require
 d2 = dependency('libusbredirhost', version: usbredir_version_info, required : get_option('usbredir'))
 d3 = dependency('libusb-1.0', version : '>= 1.0.21', required : get_option('usbredir'))
 if d1.found() and d2.found() and d3.found()
-  spice_glib_deps += [d1, d2, d3]
-  spice_gtk_config_data.set('USE_USBREDIR', '1')
-  spice_gtk_has_usbredir = true
+  if target_machine.endian() == 'little'
+    spice_glib_deps += [d1, d2, d3]
+    spice_gtk_config_data.set('USE_USBREDIR', '1')
+    spice_gtk_has_usbredir = true
+  else
+    warning('USB redirection disabled on big endian machine as ' +
+            'usbredir only support little endian')
+  endif
 endif
 
 d = dependency('libcap-ng', required : get_option('libcap-ng'))
