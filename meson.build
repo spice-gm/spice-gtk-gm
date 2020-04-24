@@ -32,13 +32,19 @@ spice_gtk_include = [include_directories('.')]
 spice_glib_deps = []
 spice_gtk_deps = []
 spice_acl_deps = []
+spice_protocol_version = '0.14.2'
 
 #
 # Set up subprojects
 #
-spice_common = subproject('spice-common', default_options : ['generate-code=client'])
+spice_common = subproject('spice-common',
+                          default_options : [
+                            'generate-code=client',
+                            'spice-protocol-version=@0@'.format(spice_protocol_version),
+                          ])
 spice_gtk_config_data.merge_from(spice_common.get_variable('spice_common_config_data'))
 spice_glib_deps += spice_common.get_variable('spice_common_client_dep')
+spice_protocol_version = spice_common.get_variable('spice_protocol_version')
 
 subproject('keycodemapdb')
 keymapgen = files('subprojects/keycodemapdb/tools/keymap-gen')
@@ -81,14 +87,11 @@ endforeach
 #
 # check for mandatory dependencies
 #
-spice_protocol_version='>= 0.14.2'
-
 glib_version = '2.46'
 glib_version_info = '>= @0@'.format(glib_version)
 pixman_version = '>= 0.17.7'
 
-deps = {'spice-protocol' : spice_protocol_version,
-        'glib-2.0'       : glib_version_info,
+deps = {'glib-2.0'       : glib_version_info,
         'gio-2.0'        : glib_version_info,
         'gobject-2.0'    : glib_version_info,
         'pixman-1'       : pixman_version,
