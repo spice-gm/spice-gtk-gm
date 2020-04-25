@@ -239,7 +239,7 @@ endif
 # usb-acl-helper-dir
 spice_gtk_usb_acl_helper_dir = get_option('usb-acl-helper-dir')
 if spice_gtk_usb_acl_helper_dir.strip() == ''
-  spice_gtk_usb_acl_helper_dir = spice_gtk_bindir
+  spice_gtk_usb_acl_helper_dir = spice_gtk_prefix / get_option('libexecdir')
 endif
 spice_gtk_config_data.set_quoted('ACL_HELPER_PATH', spice_gtk_usb_acl_helper_dir)
 
