@@ -392,7 +392,7 @@ pkgconfig = import('pkgconfig')
 pkgconfig.generate(spice_client_glib_lib,
                    description : 'SPICE Client GLib 2.0 library',
                    subdirs : 'spice-client-glib-2.0',
-                   requires : 'spice-protocol',
+                   requires : ['spice-protocol', 'glib-2.0', 'gobject-2.0', 'gio-2.0'],
                    variables : 'exec_prefix=${prefix}')
 
 #
@@ -402,6 +402,6 @@ if spice_gtk_has_gtk
   pkgconfig.generate(spice_client_gtk_lib,
                      description : 'SPICE Client Gtk 3.0 library',
                      subdirs : 'spice-client-gtk-3.0',
-                     requires : 'spice-client-glib-2.0 gtk+-3.0 >= @0@'.format(gtk_version_required),
+                     requires : ['spice-client-glib-2.0', 'gtk+-3.0', 'glib-2.0', 'gobject-2.0'],
                      variables : 'exec_prefix=${prefix}')
 endif
