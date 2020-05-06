@@ -2344,16 +2344,15 @@ static void spice_channel_iterate_read(SpiceChannel *channel)
     /* treat all incoming data (block on message completion) */
     while (!c->has_error &&
            c->state != SPICE_CHANNEL_STATE_MIGRATING &&
-           g_pollable_input_stream_is_readable(G_POLLABLE_INPUT_STREAM(c->in))
-    ) { do
-            spice_channel_recv_msg(channel,
-                                   (handler_msg_in)SPICE_CHANNEL_GET_CLASS(channel)->handle_msg, NULL);
+           (g_pollable_input_stream_is_readable(G_POLLABLE_INPUT_STREAM(c->in))
 #ifdef HAVE_SASL
             /* flush the sasl buffer too */
-        while (c->sasl_decoded != NULL);
-#else
-        while (FALSE);
+           || c->sasl_decoded != NULL
 #endif
+           )
+    ) {
+        spice_channel_recv_msg(channel,
+                               (handler_msg_in)SPICE_CHANNEL_GET_CLASS(channel)->handle_msg, NULL);
     }
 
 }
