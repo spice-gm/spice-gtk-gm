@@ -426,6 +426,12 @@ void spice_inputs_channel_button_press(SpiceInputsChannel *channel, gint button,
     case SPICE_MOUSE_BUTTON_RIGHT:
         button_state |= SPICE_MOUSE_BUTTON_MASK_RIGHT;
         break;
+    case SPICE_MOUSE_BUTTON_SIDE:
+        button_state |= SPICE_MOUSE_BUTTON_MASK_SIDE;
+        break;
+    case SPICE_MOUSE_BUTTON_EXTRA:
+        button_state |= SPICE_MOUSE_BUTTON_MASK_EXTRA;
+        break;
     }
 
     c->bs  = button_state;
@@ -490,6 +496,12 @@ void spice_inputs_channel_button_release(SpiceInputsChannel *channel, gint butto
         break;
     case SPICE_MOUSE_BUTTON_RIGHT:
         button_state &= ~SPICE_MOUSE_BUTTON_MASK_RIGHT;
+        break;
+    case SPICE_MOUSE_BUTTON_SIDE:
+        button_state &= ~SPICE_MOUSE_BUTTON_MASK_SIDE;
+        break;
+    case SPICE_MOUSE_BUTTON_EXTRA:
+        button_state &= ~SPICE_MOUSE_BUTTON_MASK_EXTRA;
         break;
     }
 

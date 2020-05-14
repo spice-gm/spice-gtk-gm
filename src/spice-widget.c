@@ -2037,6 +2037,8 @@ static int button_gdk_to_spice(guint gdk)
         [ 3 ] = SPICE_MOUSE_BUTTON_RIGHT,
         [ 4 ] = SPICE_MOUSE_BUTTON_UP,
         [ 5 ] = SPICE_MOUSE_BUTTON_DOWN,
+        [ 8 ] = SPICE_MOUSE_BUTTON_SIDE,
+        [ 9 ] = SPICE_MOUSE_BUTTON_EXTRA,
     };
 
     if (gdk < SPICE_N_ELEMENTS(map)) {
@@ -2051,6 +2053,8 @@ static int button_gdk_to_spice_mask(guint gdk)
         [1] = SPICE_MOUSE_BUTTON_MASK_LEFT,
         [2] = SPICE_MOUSE_BUTTON_MASK_MIDDLE,
         [3] = SPICE_MOUSE_BUTTON_MASK_RIGHT,
+        [8] = SPICE_MOUSE_BUTTON_MASK_SIDE,
+        [9] = SPICE_MOUSE_BUTTON_MASK_EXTRA,
     };
 
     if (gdk < SPICE_N_ELEMENTS(map)) {
@@ -2069,6 +2073,14 @@ static int button_mask_gdk_to_spice(int gdk)
         spice |= SPICE_MOUSE_BUTTON_MASK_MIDDLE;
     if (gdk & GDK_BUTTON3_MASK)
         spice |= SPICE_MOUSE_BUTTON_MASK_RIGHT;
+    /* Currently, GDK does not define any mask for buttons 8 and 9
+       For X11, no mask is set at all for those buttons:
+       https://gitlab.gnome.org/GNOME/gtk/-/blob/4fff68355a22027791258b900f1f39ca1226b669/gdk/x11/gdkdevice-xi2.c#L639
+       For Wayland, masks of (1 << 15) and (1 << 16) respectively are set:
+       https://gitlab.gnome.org/GNOME/gtk/-/blob/4fff68355a22027791258b900f1f39ca1226b669/gdk/wayland/gdkdevice-wayland.c#L1703
+       While the situation is unclear, completely ignore the GTK mask for SIDE and EXTRA events.
+       Also, note that callers of this function already set/unset the mask based on the button
+       code, so not setting the mask here shouldn't have a noticeable impact anyway */
     return spice;
 }
 
