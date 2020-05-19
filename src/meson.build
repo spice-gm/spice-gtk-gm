@@ -5,13 +5,20 @@ spice_gtk_include += [include_directories('.')]
 #
 
 # generate spice-version.h
-version_info = meson.project_version().split('.')
-major = '@0@'.format(version_info[0])
-minor = '@0@'.format(version_info[1])
-micro = '0'
-if version_info.length() > 2
-  micro = version_info[2].split('-')[0]
+if meson.project_version().startswith('UNKNOWN')
+  major = '0'
+  minor = '0'
+  micro = '1'
+else
+  version_info = meson.project_version().split('.')
+  major = '@0@'.format(version_info[0])
+  minor = '@0@'.format(version_info[1])
+  micro = '0'
+  if version_info.length() > 2
+    micro = version_info[2].split('-')[0]
+  endif
 endif
+
 version_data = configuration_data()
 version_data.set('SPICE_GTK_MAJOR_VERSION', major)
 version_data.set('SPICE_GTK_MINOR_VERSION', minor)
