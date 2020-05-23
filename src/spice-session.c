@@ -2796,7 +2796,6 @@ gboolean spice_session_get_smartcard_enabled(SpiceSession *session)
     return session->priv->smartcard;
 }
 
-G_GNUC_INTERNAL
 PhodavServer* spice_session_get_webdav_server(SpiceSession *session)
 {
     SpiceSessionPrivate *priv;

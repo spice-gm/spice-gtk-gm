@@ -36,6 +36,8 @@ G_BEGIN_DECLS
 #define SPICE_IS_SESSION_CLASS(klass) (G_TYPE_CHECK_CLASS_TYPE ((klass), SPICE_TYPE_SESSION))
 #define SPICE_SESSION_GET_CLASS(obj)  (G_TYPE_INSTANCE_GET_CLASS ((obj), SPICE_TYPE_SESSION, SpiceSessionClass))
 
+typedef struct _PhodavServer PhodavServer;
+
 /**
  * SpiceSessionVerify:
  * @SPICE_SESSION_VERIFY_PUBKEY: verify certificate public key matching
@@ -113,6 +115,7 @@ gboolean spice_session_has_channel_type(SpiceSession *session, gint type);
 gboolean spice_session_get_read_only(SpiceSession *session);
 SpiceURI *spice_session_get_proxy_uri(SpiceSession *session);
 gboolean spice_session_is_for_migration(SpiceSession *session);
+PhodavServer *spice_session_get_webdav_server(SpiceSession *session);
 
 G_END_DECLS
 
