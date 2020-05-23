@@ -177,14 +177,17 @@ endif
 
 # webdav
 spice_gtk_has_phodav = false
-d = dependency('libphodav-2.0', required: get_option('webdav'))
-if d.found()
-  spice_glib_deps += d
+phodav_dep = dependency('libphodav-2.0', required: get_option('webdav'))
+if phodav_dep.found()
+  spice_glib_deps += phodav_dep
   d = dependency('libsoup-2.4', version : '>= 2.49.91', required: get_option('webdav'))
   if d.found()
     spice_glib_deps += d
     spice_gtk_config_data.set('USE_PHODAV', '1')
     spice_gtk_has_phodav = true
+    if phodav_dep.version().version_compare('>= 2.5')
+      spice_gtk_config_data.set('HAVE_PHODAV_VIRTUAL', '1')
+    endif
   endif
 endif
 
