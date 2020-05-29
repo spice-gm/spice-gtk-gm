@@ -2666,6 +2666,17 @@ static void spice_session_set_shared_dir(SpiceSession *session, const gchar *dir
 
     g_free(s->shared_dir);
     s->shared_dir = g_strdup(dir);
+
+#ifdef HAVE_PHODAV_VIRTUAL
+    if (s->webdav == NULL) {
+        return;
+    }
+
+    PhodavVirtualDir *root;
+    g_object_get(s->webdav, "root-file", &root, NULL);
+    phodav_virtual_dir_root_set_real(root, s->shared_dir);
+    g_object_unref(root);
+#endif
 }
 
 G_GNUC_INTERNAL
@@ -2807,21 +2818,39 @@ PhodavServer* spice_session_get_webdav_server(SpiceSession *session)
     static GMutex mutex;
 
     const gchar *shared_dir = spice_session_get_shared_dir(session);
+    /* with HAVE_PHODAV_VIRTUAL, PhodavServer must be created even if shared_dir is NULL */
+#ifndef HAVE_PHODAV_VIRTUAL
     if (shared_dir == NULL) {
         SPICE_DEBUG("No shared dir set, not creating webdav server");
         return NULL;
     }
+#endif
 
     g_mutex_lock(&mutex);
 
     if (priv->webdav == NULL) {
+#ifdef HAVE_PHODAV_VIRTUAL
+        PhodavVirtualDir *root = phodav_virtual_dir_new_root();
+        priv->webdav = phodav_server_new_for_root_file(G_FILE(root));
+
+        phodav_virtual_dir_root_set_real(root, shared_dir);
+
+        g_object_unref(phodav_virtual_dir_new_dir(root, SPICE_WEBDAV_CLIPBOARD_FOLDER_PATH, NULL));
+        g_object_unref(root);
+#else
         priv->webdav = phodav_server_new(shared_dir);
+#endif
+
         g_object_bind_property(session,  "share-dir-ro",
                                priv->webdav, "read-only",
                                G_BINDING_SYNC_CREATE|G_BINDING_BIDIRECTIONAL);
+
+        /* with HAVE_PHODAV_VIRTUAL, the update is done in spice_session_set_shared_dir() */
+#ifndef HAVE_PHODAV_VIRTUAL
         g_object_bind_property(session,  "shared-dir",
                                priv->webdav, "root",
                                G_BINDING_SYNC_CREATE|G_BINDING_BIDIRECTIONAL);
+#endif
     }
 
     g_mutex_unlock(&mutex);

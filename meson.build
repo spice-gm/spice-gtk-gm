@@ -33,7 +33,7 @@ spice_glib_deps = []
 spice_gtk_deps = []
 spice_wayland_deps = []
 spice_acl_deps = []
-spice_protocol_version = '0.14.2'
+spice_protocol_version = '0.14.3'
 
 #
 # Set up subprojects

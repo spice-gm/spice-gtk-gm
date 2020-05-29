@@ -36,6 +36,8 @@ G_BEGIN_DECLS
 #define SPICE_IS_SESSION_CLASS(klass) (G_TYPE_CHECK_CLASS_TYPE ((klass), SPICE_TYPE_SESSION))
 #define SPICE_SESSION_GET_CLASS(obj)  (G_TYPE_INSTANCE_GET_CLASS ((obj), SPICE_TYPE_SESSION, SpiceSessionClass))
 
+#define SPICE_WEBDAV_CLIPBOARD_FOLDER_PATH "/.spice-clipboard"
+
 typedef struct _PhodavServer PhodavServer;
 
 /**
