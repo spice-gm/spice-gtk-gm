@@ -565,6 +565,32 @@ static gpointer free_weak_ref(gpointer data)
     return object;
 }
 
+#ifdef HAVE_PHODAV_VIRTUAL
+static SpiceWebdavChannel *clipboard_get_open_webdav(SpiceSession *session)
+{
+    GList *list, *l;
+    SpiceChannel *channel = NULL;
+    gboolean open = FALSE;
+
+    g_return_val_if_fail(session != NULL, NULL);
+
+    list = spice_session_get_channels(session);
+    for (l = g_list_first(list); l != NULL; l = g_list_next(l)) {
+        channel = l->data;
+
+        if (!SPICE_IS_WEBDAV_CHANNEL(channel)) {
+            continue;
+        }
+
+        g_object_get(channel, "port-opened", &open, NULL);
+        break;
+    }
+
+    g_list_free(list);
+    return open ? SPICE_WEBDAV_CHANNEL(channel) : NULL;
+}
+#endif
+
 static void clipboard_get_targets(GtkClipboard *clipboard,
                                   GdkAtom *atoms,
                                   gint n_atoms,
