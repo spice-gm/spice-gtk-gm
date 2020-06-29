@@ -89,7 +89,7 @@ endforeach
 #
 # check for mandatory dependencies
 #
-glib_version = '2.46'
+glib_version = '2.52'
 glib_version_info = '>= @0@'.format(glib_version)
 pixman_version = '>= 0.17.7'
 
