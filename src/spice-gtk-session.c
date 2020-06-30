@@ -55,6 +55,8 @@ struct _SpiceGtkSessionPrivate {
     GtkClipboard            *clipboard_primary;
     GtkTargetEntry          *clip_targets[CLIPBOARD_LAST];
     guint                   nclip_targets[CLIPBOARD_LAST];
+    GdkAtom                 *atoms[CLIPBOARD_LAST];
+    guint                   n_atoms[CLIPBOARD_LAST];
     gboolean                clip_hasdata[CLIPBOARD_LAST];
     gboolean                clip_grabbed[CLIPBOARD_LAST];
     gboolean                clipboard_by_guest[CLIPBOARD_LAST];
@@ -284,6 +286,8 @@ static void spice_gtk_session_finalize(GObject *gobject)
     for (i = 0; i < CLIPBOARD_LAST; ++i) {
         g_clear_pointer(&s->clip_targets[i], g_free);
         clipboard_release_delay_remove(self, i, true);
+        g_clear_pointer(&s->atoms[i], g_free);
+        s->n_atoms[i] = 0;
     }
 
     /* Chain up to the parent class */
@@ -589,6 +593,16 @@ static SpiceWebdavChannel *clipboard_get_open_webdav(SpiceSession *session)
     g_list_free(list);
     return open ? SPICE_WEBDAV_CHANNEL(channel) : NULL;
 }
+
+static GdkAtom clipboard_find_atom(SpiceGtkSessionPrivate *s, guint selection, GdkAtom a)
+{
+    for (int i = 0; i < s->n_atoms[selection]; i++) {
+        if (s->atoms[selection][i] == a) {
+            return a;
+        }
+    }
+    return GDK_NONE;
+}
 #endif
 
 static void clipboard_get_targets(GtkClipboard *clipboard,
@@ -621,6 +635,11 @@ static void clipboard_get_targets(GtkClipboard *clipboard,
 
     selection = get_selection_from_clipboard(s, clipboard);
     g_return_if_fail(selection != -1);
+
+    /* GTK+ does seem to cache atoms, but not for Wayland */
+    g_free(s->atoms[selection]);
+    s->atoms[selection] = g_memdup(atoms, n_atoms * sizeof(GdkAtom));
+    s->n_atoms[selection] = n_atoms;
 
     if (s->clip_grabbed[selection]) {
         SPICE_DEBUG("Clipboard is already grabbed, re-grab: %d atoms", n_atoms);
@@ -704,6 +723,9 @@ static void clipboard_owner_change(GtkClipboard        *clipboard,
     if (s->main == NULL) {
         return;
     }
+
+    g_clear_pointer(&s->atoms[selection], g_free);
+    s->n_atoms[selection] = 0;
 
     if (event->reason != GDK_OWNER_CHANGE_NEW_OWNER) {
         if (s->clip_grabbed[selection]) {
