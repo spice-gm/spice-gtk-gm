@@ -1348,19 +1348,26 @@ static void recalc_geometry(GtkWidget *widget)
     SpiceDisplay *display = SPICE_DISPLAY(widget);
     SpiceDisplayPrivate *d = display->priv;
     gdouble zoom = 1.0;
+    gint scale_factor = 1;
 
     if (spice_cairo_is_scaled(display))
         zoom = (gdouble)d->zoom_level / 100;
 
+    if (egl_enabled(d)) {
+        scale_factor = gtk_widget_get_scale_factor(GTK_WIDGET(display));
+    }
+
     DISPLAY_DEBUG(display,
-                  "recalc geom monitor: %d:%d, guest +%d+%d:%dx%d, window %dx%d, zoom %g",
+                  "recalc geom monitor: %d:%d, guest +%d+%d:%dx%d, window %dx%d, zoom %g, scale %d",
                   d->channel_id, d->monitor_id, d->area.x, d->area.y,
                   d->area.width, d->area.height,
-                  d->ww, d->wh, zoom);
+                  d->ww, d->wh, zoom, scale_factor);
 
     if (d->resize_guest_enable)
         spice_main_channel_update_display(d->main, get_display_id(display),
-                                          d->area.x, d->area.y, d->ww / zoom, d->wh / zoom, TRUE);
+                                          d->area.x, d->area.y,
+                                          d->ww * scale_factor / zoom,
+                                          d->wh * scale_factor / zoom, TRUE);
 }
 
 /* ---------------------------------------------------------------- */
