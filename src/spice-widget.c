@@ -2072,8 +2072,8 @@ static void transform_input(SpiceDisplay *display,
     */
     is = ((double)(d->area.width-1) / (double)(display_w-1)) * scale_factor;
 
-    window_x -= display_x;
-    window_y -= display_y;
+    window_x -= display_x / scale_factor;
+    window_y -= display_y / scale_factor;
 
     *input_x = floor (window_x * is);
     *input_y = floor (window_y * is);
