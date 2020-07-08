@@ -2964,6 +2964,7 @@ static void cursor_set(SpiceCursorChannel *channel,
     SpiceDisplayPrivate *d = display->priv;
     GdkCursor *cursor = NULL;
     SpiceCursorShape *cursor_shape;
+    gint hotspot_x, hotspot_y;
 
     g_object_get(G_OBJECT(channel), "cursor", &cursor_shape, NULL);
     if (G_UNLIKELY(cursor_shape == NULL || cursor_shape->data == NULL)) {
@@ -2985,12 +2986,22 @@ static void cursor_set(SpiceCursorChannel *channel,
                                                cursor_shape_destroy, cursor_shape);
     d->cursor_surface = gdk_cairo_surface_create_from_pixbuf(d->mouse_pixbuf, 0,
                                                              gtk_widget_get_window(GTK_WIDGET(display)));
-    d->mouse_hotspot.x = cursor_shape->hot_spot_x;
-    d->mouse_hotspot.y = cursor_shape->hot_spot_y;
+    hotspot_x = d->mouse_hotspot.x = cursor_shape->hot_spot_x;
+    hotspot_y = d->mouse_hotspot.y = cursor_shape->hot_spot_y;
+
+#ifdef GDK_WINDOWING_X11
+    /* undo hotspot scaling in gdkcursor */
+    if (GDK_IS_X11_DISPLAY(gtk_widget_get_display(GTK_WIDGET(display)))) {
+        gint scale_factor = gdk_window_get_scale_factor(gtk_widget_get_window(GTK_WIDGET(display)));
+        hotspot_x /= scale_factor;
+        hotspot_y /= scale_factor;
+    }
+#endif
+
     cursor = gdk_cursor_new_from_surface(gtk_widget_get_display(GTK_WIDGET(display)),
                                          d->cursor_surface,
-                                         d->mouse_hotspot.x,
-                                         d->mouse_hotspot.y);
+                                         hotspot_x,
+                                         hotspot_y);
 
 #if HAVE_EGL
     if (egl_enabled(d))
