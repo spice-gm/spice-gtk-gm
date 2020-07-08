@@ -106,6 +106,7 @@ struct _SpiceDisplayPrivate {
     int                     mouse_last_y;
     int                     mouse_guest_x;
     int                     mouse_guest_y;
+    cairo_surface_t         *cursor_surface;
 
     bool                    keyboard_grab_active;
     bool                    keyboard_have_focus;

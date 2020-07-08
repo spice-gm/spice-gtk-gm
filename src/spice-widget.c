@@ -474,6 +474,7 @@ static void spice_display_finalize(GObject *obj)
     g_clear_object(&d->show_cursor);
     g_clear_object(&d->mouse_cursor);
     g_clear_object(&d->mouse_pixbuf);
+    cairo_surface_destroy(d->cursor_surface);
 
     G_OBJECT_CLASS(spice_display_parent_class)->finalize(obj);
 }
@@ -2974,6 +2975,7 @@ static void cursor_set(SpiceCursorChannel *channel,
 
     cursor_invalidate(display);
     g_clear_object(&d->mouse_pixbuf);
+    cairo_surface_destroy(d->cursor_surface);
     d->mouse_pixbuf = gdk_pixbuf_new_from_data(cursor_shape->data,
                                                GDK_COLORSPACE_RGB,
                                                TRUE, 8,
@@ -2981,12 +2983,14 @@ static void cursor_set(SpiceCursorChannel *channel,
                                                cursor_shape->height,
                                                cursor_shape->width * 4,
                                                cursor_shape_destroy, cursor_shape);
+    d->cursor_surface = gdk_cairo_surface_create_from_pixbuf(d->mouse_pixbuf, 0,
+                                                             gtk_widget_get_window(GTK_WIDGET(display)));
     d->mouse_hotspot.x = cursor_shape->hot_spot_x;
     d->mouse_hotspot.y = cursor_shape->hot_spot_y;
-    cursor = gdk_cursor_new_from_pixbuf(gtk_widget_get_display(GTK_WIDGET(display)),
-                                        d->mouse_pixbuf,
-                                        d->mouse_hotspot.x,
-                                        d->mouse_hotspot.y);
+    cursor = gdk_cursor_new_from_surface(gtk_widget_get_display(GTK_WIDGET(display)),
+                                         d->cursor_surface,
+                                         d->mouse_hotspot.x,
+                                         d->mouse_hotspot.y);
 
 #if HAVE_EGL
     if (egl_enabled(d))
