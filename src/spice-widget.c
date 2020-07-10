@@ -1209,7 +1209,7 @@ static void try_mouse_grab(SpiceDisplay *display)
     d->mouse_last_y = -1;
 }
 
-static void mouse_wrap(SpiceDisplay *display, GdkEventMotion *motion)
+static void mouse_warp(SpiceDisplay *display, GdkEventMotion *motion)
 {
     SpiceDisplayPrivate *d = display->priv;
     gint xr, yr;
@@ -1219,7 +1219,7 @@ static void mouse_wrap(SpiceDisplay *display, GdkEventMotion *motion)
     g_return_if_fail(GetClipCursor(&clip));
     xr = clip.left + (clip.right - clip.left) / 2;
     yr = clip.top + (clip.bottom - clip.top) / 2;
-    /* the clip rectangle has no offset, so we can't use gdk_wrap_pointer */
+    /* the clip rectangle has no offset, so we can't use gdk_display_warp_pointer */
     SetCursorPos(xr, yr);
     d->mouse_last_x = -1;
     d->mouse_last_y = -1;
@@ -2128,7 +2128,7 @@ static gboolean motion_event(GtkWidget *widget, GdkEventMotion *motion)
             d->mouse_last_x = x;
             d->mouse_last_y = y;
             if (dx != 0 || dy != 0)
-                mouse_wrap(display, motion);
+                mouse_warp(display, motion);
         }
         break;
     default:
