@@ -126,6 +126,7 @@ static void recalc_geometry(GtkWidget *widget);
 static void channel_new(SpiceSession *s, SpiceChannel *channel, SpiceDisplay *display);
 static void channel_destroy(SpiceSession *s, SpiceChannel *channel, SpiceDisplay *display);
 static void cursor_invalidate(SpiceDisplay *display);
+static bool egl_enabled(SpiceDisplayPrivate *d);
 static void update_area(SpiceDisplay *display, gint x, gint y, gint width, gint height);
 static void release_keys(SpiceDisplay *display);
 static void size_allocate(GtkWidget *widget, GtkAllocation *conf, gpointer data);
@@ -204,6 +205,7 @@ static void update_size_request(SpiceDisplay *display)
 {
     SpiceDisplayPrivate *d = display->priv;
     gint reqwidth, reqheight;
+    gint scale_factor = 1;
 
     if (d->resize_guest_enable || d->allow_scaling) {
         reqwidth = 640;
@@ -212,6 +214,13 @@ static void update_size_request(SpiceDisplay *display)
         reqwidth = d->area.width;
         reqheight = d->area.height;
     }
+
+    if (egl_enabled(d)) {
+        scale_factor = gtk_widget_get_scale_factor(GTK_WIDGET(display));
+    }
+
+    reqwidth /= scale_factor;
+    reqheight /= scale_factor;
 
     gtk_widget_set_size_request(GTK_WIDGET(display), reqwidth, reqheight);
     recalc_geometry(GTK_WIDGET(display));
