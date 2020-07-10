@@ -205,7 +205,7 @@ static void update_size_request(SpiceDisplay *display)
 {
     SpiceDisplayPrivate *d = display->priv;
     gint reqwidth, reqheight;
-    gint scale_factor = 1;
+    gint scale_factor;
 
     if (d->resize_guest_enable || d->allow_scaling) {
         reqwidth = 640;
@@ -215,9 +215,7 @@ static void update_size_request(SpiceDisplay *display)
         reqheight = d->area.height;
     }
 
-    if (egl_enabled(d)) {
-        scale_factor = gtk_widget_get_scale_factor(GTK_WIDGET(display));
-    }
+    scale_factor = gtk_widget_get_scale_factor(GTK_WIDGET(display));
 
     reqwidth /= scale_factor;
     reqheight /= scale_factor;
@@ -1358,14 +1356,12 @@ static void recalc_geometry(GtkWidget *widget)
     SpiceDisplay *display = SPICE_DISPLAY(widget);
     SpiceDisplayPrivate *d = display->priv;
     gdouble zoom = 1.0;
-    gint scale_factor = 1;
+    gint scale_factor;
 
     if (spice_cairo_is_scaled(display))
         zoom = (gdouble)d->zoom_level / 100;
 
-    if (egl_enabled(d)) {
-        scale_factor = gtk_widget_get_scale_factor(GTK_WIDGET(display));
-    }
+    scale_factor = gtk_widget_get_scale_factor(GTK_WIDGET(display));
 
     DISPLAY_DEBUG(display,
                   "recalc geom monitor: %d:%d, guest +%d+%d:%dx%d, window %dx%d, zoom %g, scale %d",
@@ -2056,14 +2052,12 @@ static void transform_input(SpiceDisplay *display,
     SpiceDisplayPrivate *d = display->priv;
     int display_x, display_y, display_w, display_h;
     double is;
-    gint scale_factor = 1;
+    gint scale_factor;
 
     spice_display_get_scaling(display, NULL,
                               &display_x, &display_y,
                               &display_w, &display_h);
-    if (egl_enabled(d)) {
-        scale_factor = gtk_widget_get_scale_factor(GTK_WIDGET(display));
-    }
+    scale_factor = gtk_widget_get_scale_factor(GTK_WIDGET(display));
     /* For input we need a different scaling factor in order to
        be able to reach the full width of a display. For instance, consider
        a display of 100 pixels showing in a window 10 pixels wide. The normal
@@ -2906,6 +2900,7 @@ static void invalidate(SpiceChannel *channel,
     int display_x, display_y;
     int x1, y1, x2, y2;
     double s;
+    gint scale_factor;
     GdkRectangle rect = {
         .x = x,
         .y = y,
@@ -2926,11 +2921,13 @@ static void invalidate(SpiceChannel *channel,
     if (d->canvas.convert)
         do_color_convert(display, &rect);
 
+    scale_factor = gtk_widget_get_scale_factor(GTK_WIDGET(display));
     spice_display_get_scaling(display, &s,
                               &display_x, &display_y,
                               NULL, NULL);
+    display_x /= scale_factor;
+    display_y /= scale_factor;
 
-    gint scale_factor = gtk_widget_get_scale_factor(GTK_WIDGET(display));
     if (s * scale_factor > 1) {
         rect.x -= 1;
         rect.y -= 1;
@@ -2938,10 +2935,10 @@ static void invalidate(SpiceChannel *channel,
         rect.height += 2;
     }
 
-    x1 = floor ((rect.x - d->area.x) * s);
-    y1 = floor ((rect.y - d->area.y) * s);
-    x2 = ceil ((rect.x - d->area.x + rect.width) * s);
-    y2 = ceil ((rect.y - d->area.y + rect.height) * s);
+    x1 = floor ((rect.x - d->area.x) * s) / scale_factor;
+    y1 = floor ((rect.y - d->area.y) * s) / scale_factor;
+    x2 = ceil ((rect.x - d->area.x + rect.width) * s) / scale_factor;
+    y2 = ceil ((rect.y - d->area.y + rect.height) * s) / scale_factor;
 
     queue_draw_area(display,
                     display_x + x1, display_y + y1,
@@ -3049,6 +3046,7 @@ static void cursor_hide(SpiceCursorChannel *channel, gpointer data)
     update_mouse_pointer(display);
 }
 
+/* Output is always in physical device pixel, not logical pixel, regardless of EGL */
 G_GNUC_INTERNAL
 void spice_display_get_scaling(SpiceDisplay *display,
                                double *s_out,
@@ -3060,12 +3058,9 @@ void spice_display_get_scaling(SpiceDisplay *display,
     int ww, wh;
     int x, y, w, h;
     double s;
-    gint scale_factor = 1;
 
     if (gtk_widget_get_realized (GTK_WIDGET(display))) {
-        if (egl_enabled(d)) {
-            scale_factor = gtk_widget_get_scale_factor(GTK_WIDGET(display));
-        }
+        gint scale_factor = gtk_widget_get_scale_factor(GTK_WIDGET(display));
         ww = gtk_widget_get_allocated_width(GTK_WIDGET(display)) * scale_factor;
         wh = gtk_widget_get_allocated_height(GTK_WIDGET(display)) * scale_factor;
     } else {
@@ -3115,6 +3110,8 @@ static void cursor_invalidate(SpiceDisplay *display)
     SpiceDisplayPrivate *d = display->priv;
     double s;
     int x, y;
+    gint redraw_x, redraw_y;
+    gint scale_factor;
 
     if (!gtk_widget_get_realized (GTK_WIDGET(display)))
         return;
@@ -3126,10 +3123,15 @@ static void cursor_invalidate(SpiceDisplay *display)
         return;
 
     spice_display_get_scaling(display, &s, &x, &y, NULL, NULL);
+    scale_factor = gtk_widget_get_scale_factor(GTK_WIDGET(display));
+
+    redraw_x = floor((d->mouse_guest_x - d->mouse_hotspot.x - d->area.x) * s) + x;
+    redraw_y = floor((d->mouse_guest_y - d->mouse_hotspot.y - d->area.y) * s) + y;
+    redraw_x /= scale_factor;
+    redraw_y /= scale_factor;
 
     queue_draw_area(display,
-                    floor ((d->mouse_guest_x - d->mouse_hotspot.x - d->area.x) * s) + x,
-                    floor ((d->mouse_guest_y - d->mouse_hotspot.y - d->area.y) * s) + y,
+                    redraw_x, redraw_y,
                     ceil (gdk_pixbuf_get_width(d->mouse_pixbuf) * s),
                     ceil (gdk_pixbuf_get_height(d->mouse_pixbuf) * s));
 }
