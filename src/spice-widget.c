@@ -1309,6 +1309,7 @@ static void try_mouse_ungrab(SpiceDisplay *display)
     SpiceDisplayPrivate *d = display->priv;
     double s;
     int x, y;
+    gint scale_factor;
     GdkWindow *window;
 
     if (!d->mouse_grab_active)
@@ -1323,12 +1324,13 @@ static void try_mouse_ungrab(SpiceDisplay *display)
 
     d->mouse_grab_active = false;
 
+    scale_factor = gtk_widget_get_scale_factor(GTK_WIDGET(display));
     spice_display_get_scaling(display, &s, &x, &y, NULL, NULL);
 
     window = gtk_widget_get_window(GTK_WIDGET(display));
     gdk_window_get_root_coords(window,
-                               x + d->mouse_guest_x * s,
-                               y + d->mouse_guest_y * s,
+                               (x + d->mouse_guest_x * s) / scale_factor,
+                               (y + d->mouse_guest_y * s) / scale_factor,
                                &x, &y);
 
     gdk_device_warp(spice_gdk_window_get_pointing_device(window),
