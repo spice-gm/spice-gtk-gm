@@ -79,6 +79,7 @@ SpiceGrabSequence *spice_display_get_grab_keys(SpiceDisplay *display);
 void spice_display_send_keys(SpiceDisplay *display, const guint *keyvals,
                              int nkeyvals, SpiceDisplayKeyEvent kind);
 GdkPixbuf *spice_display_get_pixbuf(SpiceDisplay *display);
+void spice_display_get_preferred_size(SpiceDisplay *display, int *width, int *height);
 
 G_END_DECLS
 
