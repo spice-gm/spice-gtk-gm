@@ -209,18 +209,15 @@ static void update_size_request(SpiceDisplay *display)
     gint reqwidth, reqheight;
     gint scale_factor;
 
-    if (d->resize_guest_enable || d->allow_scaling) {
-        reqwidth = 640;
-        reqheight = 480;
-    } else {
-        reqwidth = d->area.width;
-        reqheight = d->area.height;
-    }
-
     scale_factor = gtk_widget_get_scale_factor(GTK_WIDGET(display));
 
-    reqwidth /= scale_factor;
-    reqheight /= scale_factor;
+    if (d->resize_guest_enable || d->allow_scaling) {
+        reqwidth = 640 / scale_factor;
+        reqheight = 480 / scale_factor;
+    } else {
+        reqwidth = d->area.width / scale_factor;
+        reqheight = d->area.height / scale_factor;
+    }
 
     gtk_widget_set_size_request(GTK_WIDGET(display), reqwidth, reqheight);
     recalc_geometry(GTK_WIDGET(display));
