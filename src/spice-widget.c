@@ -127,6 +127,7 @@ static void channel_new(SpiceSession *s, SpiceChannel *channel, SpiceDisplay *di
 static void channel_destroy(SpiceSession *s, SpiceChannel *channel, SpiceDisplay *display);
 static void cursor_invalidate(SpiceDisplay *display);
 static bool egl_enabled(SpiceDisplayPrivate *d);
+static void update_mouse_cursor(SpiceDisplay *display);
 static void update_area(SpiceDisplay *display, gint x, gint y, gint width, gint height);
 static void release_keys(SpiceDisplay *display);
 static void size_allocate(GtkWidget *widget, GtkAllocation *conf, gpointer data);
@@ -196,6 +197,7 @@ static void scaling_updated(SpiceDisplay *display)
 
     recalc_geometry(GTK_WIDGET(display));
     if (d->canvas.surface && window) { /* if not yet shown */
+        update_mouse_cursor(display);
         gtk_widget_queue_draw(GTK_WIDGET(display));
     }
     update_size_request(display);
@@ -222,6 +224,7 @@ static void update_size_request(SpiceDisplay *display)
 
     gtk_widget_set_size_request(GTK_WIDGET(display), reqwidth, reqheight);
     recalc_geometry(GTK_WIDGET(display));
+    update_mouse_cursor(display);
 }
 
 static void update_keyboard_focus(SpiceDisplay *display, gboolean state)
@@ -2276,6 +2279,8 @@ static void size_allocate(GtkWidget *widget, GtkAllocation *conf, gpointer data)
     d->mx = conf->x;
     d->my = conf->y;
 
+    update_mouse_cursor(display);
+
 #ifdef G_OS_WIN32
     if (d->mouse_grab_active) {
         try_mouse_ungrab(display);
@@ -2970,9 +2975,7 @@ static void cursor_set(SpiceCursorChannel *channel,
 {
     SpiceDisplay *display = data;
     SpiceDisplayPrivate *d = display->priv;
-    GdkCursor *cursor = NULL;
     SpiceCursorShape *cursor_shape;
-    gint hotspot_x, hotspot_y;
 
     g_object_get(G_OBJECT(channel), "cursor", &cursor_shape, NULL);
     if (G_UNLIKELY(cursor_shape == NULL || cursor_shape->data == NULL)) {
@@ -2984,7 +2987,6 @@ static void cursor_set(SpiceCursorChannel *channel,
 
     cursor_invalidate(display);
     g_clear_object(&d->mouse_pixbuf);
-    cairo_surface_destroy(d->cursor_surface);
     d->mouse_pixbuf = gdk_pixbuf_new_from_data(cursor_shape->data,
                                                GDK_COLORSPACE_RGB,
                                                TRUE, 8,
@@ -2992,15 +2994,59 @@ static void cursor_set(SpiceCursorChannel *channel,
                                                cursor_shape->height,
                                                cursor_shape->width * 4,
                                                cursor_shape_destroy, cursor_shape);
-    d->cursor_surface = gdk_cairo_surface_create_from_pixbuf(d->mouse_pixbuf, 0,
-                                                             gtk_widget_get_window(GTK_WIDGET(display)));
-    hotspot_x = d->mouse_hotspot.x = cursor_shape->hot_spot_x;
-    hotspot_y = d->mouse_hotspot.y = cursor_shape->hot_spot_y;
+    d->mouse_hotspot.x = cursor_shape->hot_spot_x;
+    d->mouse_hotspot.y = cursor_shape->hot_spot_y;
+
+    update_mouse_cursor(display);
+}
+
+static void update_mouse_cursor(SpiceDisplay *display)
+{
+    SpiceDisplayPrivate *d = display->priv;
+    GdkCursor *cursor = NULL;
+    cairo_t *cursor_ctx;
+    cairo_surface_t *surface, *target;
+    double scale;
+    gint scale_factor;
+    gint hotspot_x, hotspot_y;
+
+    if (G_UNLIKELY(!d->mouse_pixbuf)) {
+        return;
+    }
+
+    if (!d->ready || !d->monitor_ready) {
+        return;
+    }
+
+    spice_display_get_scaling(display, &scale, NULL, NULL, NULL, NULL);
+    scale_factor = gtk_widget_get_scale_factor(GTK_WIDGET(display));
+
+    cairo_surface_destroy(d->cursor_surface);
+
+    /* scale mouse cursor surface */
+    surface = gdk_cairo_surface_create_from_pixbuf(d->mouse_pixbuf, 0, gtk_widget_get_window(GTK_WIDGET(display)));
+    target = cairo_image_surface_create(cairo_image_surface_get_format(surface),
+                                        scale * gdk_pixbuf_get_width(d->mouse_pixbuf),
+                                        scale * gdk_pixbuf_get_height(d->mouse_pixbuf));
+
+    cairo_surface_set_device_scale(target, scale_factor, scale_factor);
+    cursor_ctx = cairo_create(target);
+    cairo_scale(cursor_ctx, scale, scale);
+    cairo_set_source_surface(cursor_ctx, surface, 0, 0);
+    cairo_paint(cursor_ctx);
+
+    d->cursor_surface = cairo_surface_reference(cairo_get_target(cursor_ctx));
+
+    cairo_surface_destroy(target);
+    cairo_surface_destroy(surface);
+    cairo_destroy(cursor_ctx);
+
+    hotspot_x = d->mouse_hotspot.x * scale;
+    hotspot_y = d->mouse_hotspot.y * scale;
 
 #ifdef GDK_WINDOWING_X11
     /* undo hotspot scaling in gdkcursor */
     if (GDK_IS_X11_DISPLAY(gtk_widget_get_display(GTK_WIDGET(display)))) {
-        gint scale_factor = gdk_window_get_scale_factor(gtk_widget_get_window(GTK_WIDGET(display)));
         hotspot_x /= scale_factor;
         hotspot_y /= scale_factor;
     }
