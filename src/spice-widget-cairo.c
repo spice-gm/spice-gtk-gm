@@ -25,6 +25,7 @@ G_GNUC_INTERNAL
 int spice_cairo_image_create(SpiceDisplay *display)
 {
     SpiceDisplayPrivate *d = display->priv;
+    gint scale_factor;
 
     if (d->canvas.surface != NULL)
         return 0;
@@ -45,6 +46,9 @@ int spice_cairo_image_create(SpiceDisplay *display)
             (d->canvas.data, CAIRO_FORMAT_RGB24,
              d->canvas.width, d->canvas.height, d->canvas.stride);
     }
+
+    scale_factor = gtk_widget_get_scale_factor(GTK_WIDGET(display));
+    cairo_surface_set_device_scale(d->canvas.surface, scale_factor, scale_factor);
 
     return 0;
 }
@@ -70,8 +74,16 @@ void spice_cairo_draw_event(SpiceDisplay *display, cairo_t *cr)
     int x, y;
     int ww, wh;
     int w, h;
+    gint scale_factor;
 
+    scale_factor = gtk_widget_get_scale_factor(GTK_WIDGET(display));
     spice_display_get_scaling(display, &s, &x, &y, &w, &h);
+
+    /* convert physical pixel to logical */
+    x /= scale_factor;
+    y /= scale_factor;
+    w /= scale_factor;
+    h /= scale_factor;
 
     ww = gtk_widget_get_allocated_width(GTK_WIDGET(display));
     wh = gtk_widget_get_allocated_height(GTK_WIDGET(display));
@@ -117,11 +129,11 @@ void spice_cairo_draw_event(SpiceDisplay *display, cairo_t *cr)
             d->mouse_guest_x != -1 && d->mouse_guest_y != -1 &&
             !d->show_cursor &&
             spice_gtk_session_get_pointer_grabbed(d->gtk_session)) {
-            GdkPixbuf *image = d->mouse_pixbuf;
-            if (image != NULL) {
-                gdk_cairo_set_source_pixbuf(cr, image,
-                                            d->mouse_guest_x - d->mouse_hotspot.x,
-                                            d->mouse_guest_y - d->mouse_hotspot.y);
+            cairo_surface_t *surface = d->cursor_surface;
+            if (surface != NULL) {
+                cairo_set_source_surface(cr, surface,
+                                         (double)(d->mouse_guest_x - d->mouse_hotspot.x) / scale_factor,
+                                         (double)(d->mouse_guest_y - d->mouse_hotspot.y) / scale_factor);
                 cairo_paint(cr);
             }
         }
