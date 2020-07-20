@@ -222,6 +222,8 @@ static void remove_client(Client *client)
     if (g_cancellable_is_cancelled(client->cancellable))
         return;
 
+    CHANNEL_DEBUG(SPICE_CHANNEL(client->self), "removing client %p", client);
+
     g_cancellable_cancel(client->cancellable);
 
     g_hash_table_remove(client->self->priv->clients, &client->id);
@@ -235,7 +237,6 @@ mux_msg_flushed_cb(GObject *source_object,
     Client *client = user_data;
 
     if (spice_vmc_write_finish(SPICE_CHANNEL(source_object), result, NULL) == -1 ||
-        client->mux.size == 0 ||
         !client_start_read(client)) {
         remove_client(client);
     }
@@ -252,12 +253,18 @@ static void server_reply_cb(GObject *source_object,
     gssize size;
 
     size = g_input_stream_read_finish(G_INPUT_STREAM(source_object), res, &err);
+    CHANNEL_DEBUG(SPICE_CHANNEL(client->self),
+        "received %"G_GSSIZE_FORMAT" B from phodav for client %p", size, client);
     if (err || g_cancellable_is_cancelled(client->cancellable))
         goto end;
 
     g_return_if_fail(size <= MAX_MUX_SIZE);
     g_return_if_fail(size >= 0);
     client->mux.size = GUINT16_TO_LE(size);
+
+    if (size == 0) {
+        remove_client(client);
+    }
 
     spice_vmc_write_async(SPICE_CHANNEL(client->self),
                           &client->mux,
@@ -424,6 +431,12 @@ static void data_read_cb(GObject *source_object,
     g_return_if_fail(size == c->demux.size);
 
     client = g_hash_table_lookup(c->clients, &c->demux.client);
+
+    if (client && g_output_stream_is_closed(g_io_stream_get_output_stream(client->pipe))) {
+        CHANNEL_DEBUG(self, "found client %p, but it's already closed, removing", client);
+        remove_client(client);
+        client = NULL;
+    }
 
     if (client)
         demux_to_client(client);
