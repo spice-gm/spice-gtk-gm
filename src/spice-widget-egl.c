@@ -593,6 +593,8 @@ void spice_egl_update_display(SpiceDisplay *display)
         GdkPixbuf *image = d->mouse_pixbuf;
         int width = gdk_pixbuf_get_width(image);
         int height = gdk_pixbuf_get_height(image);
+        width = ceil(width * s);
+        height = ceil(height * s);
 
         glBindTexture(GL_TEXTURE_2D, d->egl.tex_pointer_id);
         glEnable(GL_BLEND);
