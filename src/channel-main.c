@@ -2326,16 +2326,6 @@ static gboolean main_migrate_handshake_done(gpointer data)
     return FALSE;
 }
 
-#ifdef __GNUC__
-typedef struct __attribute__ ((__packed__)) OldRedMigrationBegin {
-#else
-typedef struct __declspec(align(1)) OldRedMigrationBegin {
-#endif
-    uint16_t port;
-    uint16_t sport;
-    char host[0];
-} OldRedMigrationBegin;
-
 /* main context */
 static gboolean migrate_connect(gpointer data)
 {
