@@ -199,30 +199,22 @@ typedef struct GlibGlzDecoder {
 #endif
 
 
-#ifdef __GNUC__
-#define ATTR_PACKED __attribute__ ((__packed__))
-#else
-#define ATTR_PACKED
-#pragma pack(push)
-#pragma pack(1)
-#endif
-
 /*
  * the palette images will be treated as one byte pixels. Their width
  * should be transformed accordingly.
  */
-typedef struct ATTR_PACKED one_byte_pixel_t {
+typedef struct one_byte_pixel_t {
     uint8_t a;
 } one_byte_pixel_t;
 
-typedef struct ATTR_PACKED rgb32_pixel_t {
+typedef struct rgb32_pixel_t {
     uint8_t b;
     uint8_t g;
     uint8_t r;
     uint8_t pad;
 } rgb32_pixel_t;
 
-typedef struct ATTR_PACKED rgb24_pixel_t {
+typedef struct rgb24_pixel_t {
     uint8_t b;
     uint8_t g;
     uint8_t r;
@@ -230,11 +222,6 @@ typedef struct ATTR_PACKED rgb24_pixel_t {
 
 typedef uint16_t rgb16_pixel_t;
 
-#ifndef __GNUC__
-#pragma pack(pop)
-#endif
-
-#undef ATTR_PACKED
 
 #define LZ_PLT
 #define PLT8
