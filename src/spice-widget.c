@@ -3018,6 +3018,8 @@ static void update_mouse_cursor(SpiceDisplay *display)
     spice_display_get_scaling(display, &scale, NULL, NULL, NULL, NULL);
     scale_factor = gtk_widget_get_scale_factor(GTK_WIDGET(display));
 
+    scale = MAX(0.5, scale);
+
     cairo_surface_destroy(d->cursor_surface);
 
     /* scale mouse cursor surface */
