@@ -121,7 +121,7 @@ struct _SpiceMainChannelPrivate  {
 
 struct spice_migrate {
     struct coroutine *from;
-    SpiceMigrationDstInfo *info;
+    SpiceMigrationDstInfo info;
     SpiceSession *session;
     int ref_count;
     guint nchannels;
@@ -2258,6 +2258,8 @@ static void
 spice_migrate_unref(spice_migrate *mig)
 {
     if (mig != NULL && --mig->ref_count == 0) {
+        g_free(mig->info.host_data);
+        g_free(mig->info.cert_subject_data);
         g_free(mig);
     }
 }
@@ -2396,7 +2398,6 @@ static gboolean migrate_connect(spice_migrate *mig)
     const char *host;
 
     g_return_val_if_fail(mig != NULL, FALSE);
-    g_return_val_if_fail(mig->info != NULL, FALSE);
     g_return_val_if_fail(mig->nchannels == 0, FALSE);
     c = SPICE_CHANNEL(mig->src_channel)->priv;
     g_return_val_if_fail(c != NULL, FALSE);
@@ -2404,7 +2405,7 @@ static gboolean migrate_connect(spice_migrate *mig)
 
     spice_session_set_migration_state(mig->session, SPICE_SESSION_MIGRATION_CONNECTING);
 
-    SpiceMigrationDstInfo *info = mig->info;
+    SpiceMigrationDstInfo *info = &mig->info;
     SPICE_DEBUG("migrate_begin %u %s %d %d",
                 info->host_size, info->host_data, info->port, info->sport);
     port = info->port;
@@ -2461,7 +2462,13 @@ static void main_migrate_connect(SpiceChannel *channel,
     mig = spice_new0(spice_migrate, 1);
     mig->ref_count = 1;
     mig->src_channel = channel;
-    mig->info = dst_info;
+    mig->info = *dst_info;
+    if (dst_info->host_data) {
+        mig->info.host_data = (void *) g_strdup((char*) dst_info->host_data);
+    }
+    if (dst_info->cert_subject_data) {
+        mig->info.cert_subject_data = (void *) g_strdup((char*) dst_info->cert_subject_data);
+    }
     mig->from = coroutine_self();
     mig->do_seamless = do_seamless;
     mig->src_mig_version = src_mig_version;
