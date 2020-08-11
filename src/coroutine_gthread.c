@@ -43,8 +43,6 @@ static void coroutine_system_init(void)
 
 	CO_DEBUG("INIT");
 
-	g_cond_init(&run_cond);
-
 	CO_DEBUG("LOCK");
 	g_mutex_lock(&run_lock);
 
