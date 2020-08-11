@@ -84,18 +84,11 @@ void coroutine_init(struct coroutine *co)
 	cc_init(&co->cc);
 }
 
-#if 0
-static __thread struct coroutine leader;
-static __thread struct coroutine *current;
-#else
 static struct coroutine leader;
-static struct coroutine *current;
-#endif
+static struct coroutine *current = &leader;
 
 struct coroutine *coroutine_self(void)
 {
-	if (current == NULL)
-		current = &leader;
 	return current;
 }
 

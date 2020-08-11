@@ -25,7 +25,7 @@
 #include "coroutine.h"
 
 static struct coroutine leader = { 0, };
-static struct coroutine *current = NULL;
+static struct coroutine *current = &leader;
 static struct coroutine *caller = NULL;
 
 int coroutine_release(struct coroutine *co)
@@ -70,8 +70,6 @@ void coroutine_init(struct coroutine *co)
 
 struct coroutine *coroutine_self(void)
 {
-	if (current == NULL)
-		current = &leader;
 	return current;
 }
 
