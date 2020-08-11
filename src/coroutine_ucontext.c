@@ -29,6 +29,7 @@
 #include <stdio.h>
 #include <stdlib.h>
 #include <string.h>
+#include <spice/macros.h>
 #include "coroutine.h"
 
 #ifndef MAP_ANONYMOUS
@@ -42,7 +43,7 @@ int coroutine_release(struct coroutine *co)
 
 static int _coroutine_release(struct continuation *cc)
 {
-	struct coroutine *co = container_of(cc, struct coroutine, cc);
+	struct coroutine *co = SPICE_CONTAINEROF(cc, struct coroutine, cc);
 
 	munmap(co->cc.stack, co->cc.stack_size);
 
@@ -53,7 +54,7 @@ static int _coroutine_release(struct continuation *cc)
 
 static void coroutine_trampoline(struct continuation *cc)
 {
-	struct coroutine *co = container_of(cc, struct coroutine, cc);
+	struct coroutine *co = SPICE_CONTAINEROF(cc, struct coroutine, cc);
 	co->data = co->entry(co->data);
 }
 

@@ -20,7 +20,6 @@
 
 #pragma once
 
-#include "spice-common.h"
 #include <stddef.h>
 #include <ucontext.h>
 #include <setjmp.h>
@@ -46,11 +45,6 @@ int cc_release(struct continuation *cc);
 /* you can use an uninitialized struct continuation for from if you do not have
    the current continuation handy. */
 int cc_swap(struct continuation *from, struct continuation *to);
-
-#define offset_of(type, member) ((unsigned long)(&((type *)0)->member))
-#define container_of(obj, type, member)                                 \
-        SPICE_ALIGNED_CAST(type *,                                      \
-                           (((char *)obj) - offset_of(type, member)))
 
 /*
  * Local variables:
