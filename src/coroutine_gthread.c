@@ -49,7 +49,6 @@ static void coroutine_system_init(void)
 	/* The thread that creates the first coroutine is the system
 	 * coroutine so let's fill out a structure for it */
 	leader.entry = NULL;
-	leader.release = NULL;
 	leader.stack_size = 0;
 	leader.exited = 0;
 	leader.thread = g_thread_self();

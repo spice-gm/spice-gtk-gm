@@ -2707,7 +2707,6 @@ static gboolean connect_delayed(gpointer data)
 
     co->stack_size = 16 << 20; /* 16Mb */
     co->entry = spice_channel_coroutine;
-    co->release = NULL;
 
     coroutine_init(co);
     coroutine_yieldto(co, channel);

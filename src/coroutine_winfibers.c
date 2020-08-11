@@ -40,11 +40,6 @@ static void WINAPI coroutine_trampoline(LPVOID lpParameter)
 
 	co->data = co->entry(co->data);
 
-	if (co->release)
-		co->ret = co->release(co);
-	else
-		co->ret = 0;
-
 	co->caller = NULL;
 
 	// and switch back to caller

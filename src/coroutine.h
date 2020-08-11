@@ -34,7 +34,6 @@ struct coroutine
 {
 	size_t stack_size;
 	void *(*entry)(void *);
-	int (*release)(struct coroutine *);
 
 	/* read-only */
 	int exited;
