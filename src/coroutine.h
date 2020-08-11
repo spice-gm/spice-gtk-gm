@@ -68,8 +68,9 @@ void *coroutine_yield(void *arg);
 
 gboolean coroutine_is_main(struct coroutine *co);
 
-static inline gboolean coroutine_self_is_main(void) {
-	return coroutine_self() == NULL || coroutine_is_main(coroutine_self());
+static inline gboolean coroutine_self_is_main(void)
+{
+	return coroutine_is_main(coroutine_self());
 }
 
 /*
