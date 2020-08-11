@@ -26,7 +26,6 @@
 
 static struct coroutine leader = { 0, };
 static struct coroutine *current = &leader;
-static struct coroutine *caller = NULL;
 
 int coroutine_release(struct coroutine *co)
 {
@@ -37,6 +36,7 @@ int coroutine_release(struct coroutine *co)
 static void WINAPI coroutine_trampoline(LPVOID lpParameter)
 {
 	struct coroutine *co = (struct coroutine *)lpParameter;
+	struct coroutine *caller = co->caller;
 
 	co->data = co->entry(co->data);
 
@@ -72,13 +72,12 @@ static void *coroutine_swap(struct coroutine *from, struct coroutine *to, void *
 {
 	to->data = arg;
 	current = to;
-	caller = from;
 	SwitchToFiber(to->fiber);
 	if (to->ret == 0)
 		return from->data;
 	else if (to->ret == 1) {
 		coroutine_release(to);
-		current = &leader;
+		current = from;
 		to->exited = 1;
 		return to->data;
 	}
