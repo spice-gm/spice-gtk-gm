@@ -25,7 +25,7 @@
 #include <stdlib.h>
 
 static GCond run_cond;
-static GMutex run_lock;;
+static GMutex run_lock;
 static struct coroutine *current;
 static struct coroutine leader;
 
