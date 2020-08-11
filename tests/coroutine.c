@@ -74,18 +74,50 @@ static void test_coroutine_two(void)
     g_assert(self == coroutine_self());
 }
 
+static gpointer co_entry_yield2(gpointer data)
+{
+    struct coroutine *self = coroutine_self();
+    gpointer val;
+
+    g_assert(data == GINT_TO_POINTER(12));
+    val = coroutine_yield(GINT_TO_POINTER(23));
+    g_assert_cmpint(GPOINTER_TO_INT(val), ==, 34);
+
+    g_assert(self == coroutine_self());
+    g_assert(!coroutine_self_is_main());
+
+    return NULL;
+}
+
 static gpointer co_entry_yield(gpointer data)
 {
+    struct coroutine *self = coroutine_self();
+    struct coroutine co = {
+        .stack_size = 1 << 20,
+        .entry = co_entry_yield2,
+    };
     gpointer val;
+
+    coroutine_init(&co);
+    val = coroutine_yieldto(&co, GINT_TO_POINTER(12));
+
+    g_assert(self == coroutine_self());
+    g_assert_cmpint(GPOINTER_TO_INT(val), ==, 23);
+
+    coroutine_yieldto(&co, GINT_TO_POINTER(34));
+    g_assert(self == coroutine_self());
 
     g_assert(data == NULL);
     val = coroutine_yield(GINT_TO_POINTER(1));
     g_assert_cmpint(GPOINTER_TO_INT(val), ==, 2);
 
+    g_assert(self == coroutine_self());
     g_assert(!coroutine_self_is_main());
 
     val = coroutine_yield(GINT_TO_POINTER(3));
     g_assert_cmpint(GPOINTER_TO_INT(val), ==, 4);
+
+    g_assert(self == coroutine_self());
 
     return NULL;
 }

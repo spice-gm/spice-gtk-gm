@@ -75,6 +75,7 @@ static gpointer coroutine_thread(gpointer opaque)
 	co->exited = 1;
 
 	co->caller->runnable = TRUE;
+	co->caller = NULL;
 	CO_DEBUG("BROADCAST");
 	g_cond_broadcast(&run_cond);
 	CO_DEBUG("UNLOCK");
@@ -104,7 +105,6 @@ static void *coroutine_swap(struct coroutine *from, struct coroutine *to, void *
 	from->runnable = FALSE;
 	to->runnable = TRUE;
 	to->data = arg;
-	to->caller = from;
 	CO_DEBUG("BROADCAST");
 	g_cond_broadcast(&run_cond);
 	CO_DEBUG("UNLOCK");
@@ -116,7 +116,6 @@ static void *coroutine_swap(struct coroutine *from, struct coroutine *to, void *
 		g_cond_wait(&run_cond, &run_lock);
 	}
 	current = from;
-	to->caller = NULL;
 
 	CO_DEBUG("SWAPPED");
 	return from->data;
@@ -134,6 +133,7 @@ void *coroutine_yieldto(struct coroutine *to, void *arg)
 	g_return_val_if_fail(!to->exited, NULL);
 
 	CO_DEBUG("SWAP");
+	to->caller = coroutine_self();
 	return coroutine_swap(coroutine_self(), to, arg);
 }
 
