@@ -100,7 +100,7 @@ int coroutine_release(struct coroutine *co G_GNUC_UNUSED)
 	return 0;
 }
 
-void *coroutine_swap(struct coroutine *from, struct coroutine *to, void *arg)
+static void *coroutine_swap(struct coroutine *from, struct coroutine *to, void *arg)
 {
 	from->runnable = FALSE;
 	to->runnable = TRUE;

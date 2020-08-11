@@ -99,7 +99,7 @@ struct coroutine *coroutine_self(void)
 	return current;
 }
 
-void *coroutine_swap(struct coroutine *from, struct coroutine *to, void *arg)
+static void *coroutine_swap(struct coroutine *from, struct coroutine *to, void *arg)
 {
 	int ret;
 	to->data = arg;
