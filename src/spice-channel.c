@@ -2636,7 +2636,7 @@ ssl_reconnect:
         if (rc <= 0) {
             rc = SSL_get_error(c->ssl, rc);
             if (rc == SSL_ERROR_WANT_READ || rc == SSL_ERROR_WANT_WRITE) {
-                g_coroutine_socket_wait(&c->coroutine, c->sock, G_IO_OUT|G_IO_ERR|G_IO_HUP);
+                g_coroutine_socket_wait(&c->coroutine, c->sock, ssl_error_to_cond(rc));
                 goto ssl_reconnect;
             } else {
                 g_warning("%s: SSL_connect: %s",
