@@ -1366,9 +1366,8 @@ static void recalc_geometry(GtkWidget *widget)
     scale_factor = gtk_widget_get_scale_factor(GTK_WIDGET(display));
 
     DISPLAY_DEBUG(display,
-                  "recalc geom monitor: %d:%d, guest +%d+%d:%dx%d, window %dx%d, zoom %g, scale %d",
-                  d->channel_id, d->monitor_id, d->area.x, d->area.y,
-                  d->area.width, d->area.height,
+                  "recalc geom: guest +%d+%d:%dx%d, window %dx%d, zoom %g, scale %d",
+                  d->area.x, d->area.y, d->area.width, d->area.height,
                   d->ww, d->wh, zoom, scale_factor);
 
     if (d->resize_guest_enable)
