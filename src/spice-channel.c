@@ -760,6 +760,18 @@ void spice_msg_out_send_internal(SpiceMsgOut *out)
     spice_channel_write_msg(out->channel, out);
 }
 
+static inline GIOCondition
+ssl_error_to_cond(int ssl_error)
+{
+    if (ssl_error == SSL_ERROR_WANT_READ) {
+        return G_IO_IN;
+    }
+    if (ssl_error == SSL_ERROR_WANT_WRITE) {
+        return G_IO_OUT;
+    }
+    return 0;
+}
+
 /*
  * Helper function to deal with the nonblocking part of _flush_wire() function.
  * It returns the result of the write and will set the proper bits in @cond in
@@ -783,10 +795,7 @@ static gint spice_channel_flush_wire_nonblocking(SpiceChannel *channel,
         ret = SSL_write(c->ssl, ptr, len);
         if (ret < 0) {
             ret = SSL_get_error(c->ssl, ret);
-            if (ret == SSL_ERROR_WANT_READ)
-                *cond |= G_IO_IN;
-            if (ret == SSL_ERROR_WANT_WRITE)
-                *cond |= G_IO_OUT;
+            *cond = ssl_error_to_cond(ret);
             ret = -1;
         }
     } else {
@@ -1007,10 +1016,7 @@ static int spice_channel_read_wire_nonblocking(SpiceChannel *channel,
         ret = SSL_read(c->ssl, data, len);
         if (ret < 0) {
             ret = SSL_get_error(c->ssl, ret);
-            if (ret == SSL_ERROR_WANT_READ)
-                *cond |= G_IO_IN;
-            if (ret == SSL_ERROR_WANT_WRITE)
-                *cond |= G_IO_OUT;
+            *cond = ssl_error_to_cond(ret);
             ret = -1;
         }
     } else {
