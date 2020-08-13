@@ -112,7 +112,7 @@ static void *coroutine_swap(struct coroutine *from, struct coroutine *to, void *
 	CO_DEBUG("LOCK");
 	g_mutex_lock(&run_lock);
 	while (!from->runnable) {
-	        CO_DEBUG("WAIT");
+		CO_DEBUG("WAIT");
 		g_cond_wait(&run_cond, &run_lock);
 	}
 	current = from;
@@ -152,5 +152,5 @@ void *coroutine_yield(void *arg)
 
 gboolean coroutine_is_main(struct coroutine *co)
 {
-    return (co == &leader);
+	return (co == &leader);
 }

@@ -45,8 +45,8 @@ struct coroutine
 #if WITH_UCONTEXT
 	struct continuation cc;
 #elif WITH_WINFIBER
-        LPVOID fiber;
-        int ret;
+	LPVOID fiber;
+	int ret;
 #else
 	GThread *thread;
 	gboolean runnable;

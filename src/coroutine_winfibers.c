@@ -107,7 +107,7 @@ void *coroutine_yield(void *arg)
 
 gboolean coroutine_is_main(struct coroutine *co)
 {
-    return (co == &leader);
+	return (co == &leader);
 }
 /*
  * Local variables:
