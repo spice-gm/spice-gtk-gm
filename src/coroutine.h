@@ -44,6 +44,9 @@ struct coroutine
 
 #if WITH_UCONTEXT
 	struct continuation cc;
+#ifdef HAVE_VALGRIND
+	unsigned int vg_stack;
+#endif
 #elif WITH_WINFIBER
 	LPVOID fiber;
 	int ret;

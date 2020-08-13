@@ -61,6 +61,7 @@ headers = [
   'sys/types.h',
   'netinet/in.h',
   'arpa/inet.h',
+  'valgrind/valgrind.h'
 ]
 
 foreach header : headers
@@ -344,6 +345,14 @@ d = dependency('libcacard', version : '>= 2.5.1', required : get_option('smartca
 if d.found()
   spice_glib_deps += d
   spice_gtk_config_data.set('USE_SMARTCARD', '1')
+endif
+
+# valgrind
+if get_option('valgrind')
+  if spice_gtk_config_data.get('HAVE_VALGRIND_VALGRIND_H', '0') != '1'
+    error('Valgrind requested but headers not found')
+  endif
+  spice_gtk_config_data.set('HAVE_VALGRIND', '1')
 endif
 
 #

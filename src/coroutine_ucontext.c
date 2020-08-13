@@ -30,6 +30,9 @@
 #include <stdlib.h>
 #include <string.h>
 #include <spice/macros.h>
+#ifdef HAVE_VALGRIND
+#include <valgrind/valgrind.h>
+#endif
 #include "coroutine.h"
 
 #ifndef MAP_ANONYMOUS
@@ -45,6 +48,9 @@ static int _coroutine_release(struct continuation *cc)
 {
 	struct coroutine *co = SPICE_CONTAINEROF(cc, struct coroutine, cc);
 
+#ifdef HAVE_VALGRIND
+	VALGRIND_STACK_DEREGISTER(co->vg_stack);
+#endif
 	munmap(co->cc.stack, co->cc.stack_size);
 
 	co->caller = NULL;
@@ -71,6 +77,9 @@ void coroutine_init(struct coroutine *co)
 	if (co->cc.stack == MAP_FAILED)
 		g_error("mmap(%" G_GSIZE_FORMAT ") failed: %s",
 			co->stack_size, g_strerror(errno));
+#ifdef HAVE_VALGRIND
+	co->vg_stack = VALGRIND_STACK_REGISTER(co->cc.stack, co->cc.stack + co->stack_size);
+#endif
 
 	co->cc.entry = coroutine_trampoline;
 	co->cc.release = _coroutine_release;

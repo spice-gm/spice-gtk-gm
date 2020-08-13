@@ -85,3 +85,8 @@ option('recorder',
     type : 'boolean',
     value : false,
     description: 'Enable recorder instrumentation')
+
+option('valgrind',
+    type : 'boolean',
+    value : false,
+    description : 'Enable Valgrind support')
