@@ -25,6 +25,7 @@
 #endif
 
 #include <errno.h>
+#include <ucontext.h>
 #include <glib.h>
 
 #include "continuation.h"
@@ -35,39 +36,51 @@
  * union is a quick hack to let us do that
  */
 union cc_arg {
-	void *p;
 	int i[2];
+	void *p;
 };
 
 static void continuation_trampoline(int i0, int i1)
 {
-	union cc_arg arg;
-	struct continuation *cc;
-	arg.i[0] = i0;
-	arg.i[1] = i1;
-	cc = arg.p;
+	const union cc_arg arg = {{ i0, i1 }};
+	struct continuation *const cc = arg.p;
 
-	if (_setjmp(cc->jmp) == 0) {
-		ucontext_t tmp;
-		swapcontext(&tmp, &cc->last);
+	if (_setjmp(cc->jmp) != 0) {
+		cc->entry(cc);
+		cc->exited = 1;
+		_longjmp(*((jmp_buf *) cc->last), 1);
 	}
 
-	cc->entry(cc);
+	/* Here you would be tempted to use use uc_link and avoid the usage of
+	 * setcontext; don't do it, it would potentially corruct stack returning.
+	 * The return would "release" part of the stack which could be
+	 * overridden for instance by a signal handler.
+	 * This could corrupt some variables allocated on the stack.
+	 * Although this function has very few variables which potentially
+	 * will be allocated on registers the union and the call to
+	 * _setjmp could reduce optimizations causing variables to be
+	 * allocated on the stack.
+	 */
+	setcontext((ucontext_t *) cc->last);
+	g_error("setcontext() failed: %s", g_strerror(errno));
 }
 
 void cc_init(struct continuation *cc)
 {
 	volatile union cc_arg arg;
+	ucontext_t uc, uc_ret;
 	arg.p = cc;
-	if (getcontext(&cc->uc) == -1)
+	if (getcontext(&uc) == -1)
 		g_error("getcontext() failed: %s", g_strerror(errno));
-	cc->uc.uc_link = &cc->last;
-	cc->uc.uc_stack.ss_sp = cc->stack;
-	cc->uc.uc_stack.ss_size = cc->stack_size;
-	cc->uc.uc_stack.ss_flags = 0;
+	cc->exited = 0;
+	uc.uc_link = NULL;
+	uc.uc_stack.ss_sp = cc->stack;
+	uc.uc_stack.ss_size = cc->stack_size;
+	uc.uc_stack.ss_flags = 0;
+	cc->last = &uc_ret;
 
-	makecontext(&cc->uc, (void *)continuation_trampoline, 2, arg.i[0], arg.i[1]);
-	swapcontext(&cc->last, &cc->uc);
+	makecontext(&uc, (void *)continuation_trampoline, 2, arg.i[0], arg.i[1]);
+	swapcontext(&uc_ret, &uc);
 }
 
 int cc_release(struct continuation *cc)
@@ -80,18 +93,15 @@ int cc_release(struct continuation *cc)
 
 int cc_swap(struct continuation *from, struct continuation *to)
 {
-	to->exited = 0;
-	if (getcontext(&to->last) == -1)
-		return -1;
-	else if (to->exited == 0)
-		to->exited = 1; // so when coroutine finishes
-	else if (to->exited == 1)
-		return 1; // it ends up here
+	if (!to->exited) {
+		to->last = &from->jmp;
+		if (_setjmp(from->jmp) == 0) {
+			_longjmp(to->jmp, 1);
+		}
 
-	if (_setjmp(from->jmp) == 0)
-		_longjmp(to->jmp, 1);
-
-	return 0;
+		return to->exited;
+	}
+	g_error("continuation routine already exited");
 }
 /*
  * Local variables:

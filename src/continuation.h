@@ -21,7 +21,6 @@
 #pragma once
 
 #include <stddef.h>
-#include <ucontext.h>
 #include <setjmp.h>
 
 struct continuation
@@ -32,9 +31,8 @@ struct continuation
 	int (*release)(struct continuation *cc);
 
 	/* private */
-	ucontext_t uc;
-	ucontext_t last;
 	int exited;
+	void *last;
 	jmp_buf jmp;
 };
 
