@@ -1358,23 +1358,43 @@ static void recalc_geometry(GtkWidget *widget)
     SpiceDisplay *display = SPICE_DISPLAY(widget);
     SpiceDisplayPrivate *d = display->priv;
     gdouble zoom = 1.0;
-    gint scale_factor;
+    gint scale_factor, height_mm = 0, width_mm = 0;
+    bool has_display_mm = false;
 
     if (spice_cairo_is_scaled(display))
         zoom = (gdouble)d->zoom_level / 100;
 
     scale_factor = gtk_widget_get_scale_factor(GTK_WIDGET(display));
 
-    DISPLAY_DEBUG(display,
-                  "recalc geom: guest +%d+%d:%dx%d, window %dx%d, zoom %g, scale %d",
-                  d->area.x, d->area.y, d->area.width, d->area.height,
-                  d->ww, d->wh, zoom, scale_factor);
+    if (gtk_widget_get_window(widget)) {
+        GdkRectangle geometry;
+        GdkMonitor *monitor =
+            gdk_display_get_monitor_at_window(gtk_widget_get_display(widget),
+                                              gtk_widget_get_window(widget));
+        height_mm = gdk_monitor_get_height_mm(monitor);
+        width_mm = gdk_monitor_get_width_mm(monitor);
+        gdk_monitor_get_geometry(monitor, &geometry);
+        /* FIXME: gives wrong results atm: https://gitlab.gnome.org/GNOME/gtk/-/issues/3066 */
+        width_mm = (width_mm * d->ww / geometry.width) / zoom * scale_factor;
+        height_mm = (height_mm * d->wh / geometry.height) / zoom * scale_factor;
+        has_display_mm = true;
+    }
 
-    if (d->resize_guest_enable)
+    DISPLAY_DEBUG(display,
+                  "recalc geom: guest +%d+%d:%dx%d, window %dx%d, zoom %g, scale %d, dim %dx%dmm",
+                  d->area.x, d->area.y, d->area.width, d->area.height,
+                  d->ww, d->wh, zoom, scale_factor, width_mm, height_mm);
+
+    if (d->resize_guest_enable) {
+        if (has_display_mm) {
+            spice_main_channel_update_display_mm(d->main, get_display_id(display),
+                                                 width_mm, height_mm, TRUE);
+        }
         spice_main_channel_update_display(d->main, get_display_id(display),
                                           d->area.x, d->area.y,
                                           d->ww * scale_factor / zoom,
                                           d->wh * scale_factor / zoom, TRUE);
+    }
 }
 
 /* ---------------------------------------------------------------- */
