@@ -93,7 +93,8 @@ glib_version = '2.52'
 glib_version_info = '>= @0@'.format(glib_version)
 pixman_version = '>= 0.17.7'
 
-deps = {'glib-2.0'       : glib_version_info,
+deps = {'spice-protocol' : '>= @0@'.format(spice_protocol_version),
+        'glib-2.0'       : glib_version_info,
         'gio-2.0'        : glib_version_info,
         'gobject-2.0'    : glib_version_info,
         'pixman-1'       : pixman_version,
