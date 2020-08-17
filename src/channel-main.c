@@ -222,6 +222,8 @@ static const char *agent_caps[] = {
     [ VD_AGENT_CAP_AUDIO_VOLUME_SYNC   ] = "volume-sync",
     [ VD_AGENT_CAP_MONITORS_CONFIG_POSITION ] = "monitors config position",
     [ VD_AGENT_CAP_FILE_XFER_DISABLED ] = "file transfer disabled",
+    [ VD_AGENT_CAP_FILE_XFER_DETAILED_ERRORS ] = "file transfer detailed errors",
+    [ VD_AGENT_CAP_GRAPHICS_DEVICE_INFO ] = "graphics device info",
     [ VD_AGENT_CAP_CLIPBOARD_NO_RELEASE_ON_REGRAB ] = "no release on re-grab",
     [ VD_AGENT_CAP_CLIPBOARD_GRAB_SERIAL ] = "clipboard grab serial",
 };
