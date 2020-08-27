@@ -867,7 +867,6 @@ usbredir_control_packet(void *priv, uint64_t id, struct usb_redir_control_packet
 
     if (!done) {
         device_ops(edev)->control_request(edev, data, data_len, &response, &out_buffer);
-        done = TRUE;
     }
 
     if (response.status) {
@@ -1367,8 +1366,8 @@ void spice_usb_backend_channel_delete(SpiceUsbBackendChannel *ch)
         free(ch->rules);
     }
 
-    g_free(ch);
     SPICE_DEBUG("%s << %p", __FUNCTION__, ch);
+    g_free(ch);
 }
 
 void

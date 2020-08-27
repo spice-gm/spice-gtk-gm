@@ -104,7 +104,7 @@ spice_qmp_dispatch_message(SpiceQmpPort *self)
         return TRUE;
     }
 
-    if ((node = json_object_get_member(obj, "error"))) {
+    if (json_object_get_member(obj, "error") != NULL) {
         gint id = json_object_get_int_member(obj, "id");
         const gchar *desc = json_object_get_string_member(obj, "desc");
 

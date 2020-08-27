@@ -150,7 +150,7 @@ static int cd_device_load(SpiceCdLU *unit, gboolean load)
     if (load) {
         error = ioctl(fd, CDROMCLOSETRAY, 0);
     } else {
-        error = ioctl(fd, CDROM_LOCKDOOR, 0);
+        ioctl(fd, CDROM_LOCKDOOR, 0);
         error = ioctl(fd, CDROMEJECT, 0);
     }
     if (error) {
