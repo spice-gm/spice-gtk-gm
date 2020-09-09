@@ -196,6 +196,7 @@ enum {
     PROP_SECURE_CHANNELS,
     PROP_SHARED_DIR,
     PROP_SHARE_DIR_RO,
+    PROP_WEBDAV_SERVER,
     PROP_USERNAME,
     PROP_UNIX_PATH,
     PROP_PREF_COMPRESSION,
@@ -704,6 +705,9 @@ static void spice_session_get_property(GObject    *gobject,
         break;
     case PROP_SHARE_DIR_RO:
         g_value_set_boolean(value, s->share_dir_ro);
+        break;
+    case PROP_WEBDAV_SERVER:
+        g_value_set_object(value, spice_session_get_webdav_server(session));
         break;
     case PROP_PREF_COMPRESSION:
         g_value_set_enum(value, s->preferred_compression);
@@ -1483,6 +1487,27 @@ static void spice_session_class_init(SpiceSessionClass *klass)
                               G_PARAM_READWRITE |
                               G_PARAM_CONSTRUCT |
                               G_PARAM_STATIC_STRINGS));
+
+    /**
+     * SpiceSession:webdav-server:
+     *
+     * Phodav server that is internally used by #SpiceSession to make
+     * #SpiceSession:shared-dir available to the host.
+     *
+     * Since: 0.39
+     **/
+    g_object_class_install_property
+        (gobject_class, PROP_WEBDAV_SERVER,
+         g_param_spec_object("webdav-server",
+                             "WebDAV server",
+                             "PhodavServer object used for directory sharing",
+#ifdef USE_PHODAV
+                             PHODAV_TYPE_SERVER,
+#else
+                             G_TYPE_OBJECT,
+#endif
+                             G_PARAM_READABLE |
+                             G_PARAM_STATIC_STRINGS));
 
     /**
      * SpiceSession:preferred-compression:
@@ -2807,6 +2832,7 @@ gboolean spice_session_get_smartcard_enabled(SpiceSession *session)
     return session->priv->smartcard;
 }
 
+G_GNUC_INTERNAL
 PhodavServer* spice_session_get_webdav_server(SpiceSession *session)
 {
     SpiceSessionPrivate *priv;

@@ -1135,7 +1135,9 @@ static gchar *strv_uris_transform_to_data(SpiceGtkSessionPrivate *s,
     gchar **uris, gsize *size_out, GdkDragAction action)
 {
     SpiceWebdavChannel *webdav;
-    PhodavServer *phodav;
+    /* if there's version mismatch between spice-client-gtk and spice-client-glib,
+     * "webdav-server" property might not be present, so phodav must be initialized to NULL */
+    PhodavServer *phodav = NULL;
     PhodavVirtualDir *root;
 
     gchar **uri_ptr, *path, **paths, *data;
@@ -1154,8 +1156,12 @@ static gchar *strv_uris_transform_to_data(SpiceGtkSessionPrivate *s,
         return NULL;
     }
 
-    phodav = spice_session_get_webdav_server(s->session);
+    g_object_get(s->session, "webdav-server", &phodav, NULL);
+    if (!phodav) {
+        return NULL;
+    }
     g_object_get(phodav, "root-file", &root, NULL);
+    g_object_unref(phodav);
 
     paths = g_new0(gchar *, g_strv_length(uris) + 2);
 

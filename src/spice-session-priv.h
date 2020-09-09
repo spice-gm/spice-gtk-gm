@@ -87,6 +87,7 @@ gboolean spice_session_get_smartcard_enabled(SpiceSession *session);
 gboolean spice_session_get_usbredir_enabled(SpiceSession *session);
 gboolean spice_session_get_gl_scanout_enabled(SpiceSession *session);
 
+PhodavServer *spice_session_get_webdav_server(SpiceSession *session);
 guint spice_session_get_n_display_channels(SpiceSession *session);
 gboolean spice_session_set_migration_session(SpiceSession *session, SpiceSession *mig_session);
 SpiceAudio *spice_audio_get(SpiceSession *session, GMainContext *context);
