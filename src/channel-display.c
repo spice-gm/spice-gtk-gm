@@ -993,6 +993,7 @@ static int create_canvas(SpiceChannel *channel, display_surface *surface)
         if (c->primary) {
             if (c->primary->width == surface->width &&
                 c->primary->height == surface->height) {
+                g_free(surface);
                 CHANNEL_DEBUG(channel, "Reusing existing primary surface");
                 return 0;
             }
