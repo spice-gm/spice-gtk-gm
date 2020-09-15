@@ -62,6 +62,8 @@ typedef struct {
     int                     y;
     int                     width;
     int                     height;
+    int                     width_mm;
+    int                     height_mm;
     SpiceDisplayState       display_state;
 } SpiceDisplayConfig;
 
@@ -1129,13 +1131,16 @@ gboolean spice_main_channel_send_monitor_config(SpiceMainChannel *channel)
         }
     }
 
-    size = sizeof(VDAgentMonitorsConfig) + sizeof(VDAgentMonConfig) * monitors;
+    size = sizeof(VDAgentMonitorsConfig) +
+        (sizeof(VDAgentMonConfig) + sizeof(VDAgentMonitorMM)) * monitors;
     mon = g_malloc0(size);
 
     mon->num_of_monitors = monitors;
     if (c->disable_display_position == FALSE ||
         c->disable_display_align == FALSE)
         mon->flags |= VD_AGENT_CONFIG_MONITORS_FLAG_USE_POS;
+
+    mon->flags |= VD_AGENT_CONFIG_MONITORS_FLAG_PHYSICAL_SIZE;
 
     CHANNEL_DEBUG(channel, "sending new monitors config to guest");
     j = 0;
@@ -1155,6 +1160,20 @@ gboolean spice_main_channel_send_monitor_config(SpiceMainChannel *channel)
                       mon->monitors[j].width, mon->monitors[j].height,
                       mon->monitors[j].x, mon->monitors[j].y,
                       mon->monitors[j].depth);
+        j++;
+    }
+
+    VDAgentMonitorMM *mm = (void *)&mon->monitors[monitors];
+    for (i = 0, j = 0; i < SPICE_N_ELEMENTS(c->display); i++) {
+        if (c->display[i].display_state != DISPLAY_ENABLED) {
+            if (spice_main_channel_agent_test_capability(channel,
+                                                         VD_AGENT_CAP_SPARSE_MONITORS_CONFIG)) {
+                j++;
+            }
+            continue;
+        }
+        mm[j].width = c->display[i].width_mm;
+        mm[j].height = c->display[i].height_mm;
         j++;
     }
 
@@ -2690,6 +2709,22 @@ void spice_main_update_display(SpiceMainChannel *channel, int id,
     spice_main_channel_update_display(channel, id, x, y, width, height, update);
 }
 
+static void
+update_display_config(SpiceMainChannel *channel, int id, SpiceDisplayConfig *config, gboolean update)
+{
+    SpiceMainChannelPrivate *c = channel->priv;
+
+    if (memcmp(config, &c->display[id], sizeof(SpiceDisplayConfig)) == 0) {
+        return;
+    }
+
+    c->display[id] = *config;
+
+    if (update) {
+        update_display_timer(channel, 1);
+    }
+}
+
 /**
  * spice_main_channel_update_display:
  * @channel: a #SpiceMainChannel
@@ -2725,18 +2760,51 @@ void spice_main_channel_update_display(SpiceMainChannel *channel, int id, int x,
 
     g_return_if_fail(id >= 0 && id < SPICE_N_ELEMENTS(c->display));
 
-    SpiceDisplayConfig display = {
+    SpiceDisplayConfig config = {
         .x = x, .y = y, .width = width, .height = height,
-        .display_state = c->display[id].display_state
+        .width_mm = c->display[id].width_mm,
+        .height_mm = c->display[id].height_mm,
+        .display_state = c->display[id].display_state,
     };
 
-    if (memcmp(&display, &c->display[id], sizeof(SpiceDisplayConfig)) == 0)
-        return;
+    update_display_config(channel, id, &config, update);
+}
 
-    c->display[id] = display;
+/**
+ * spice_main_channel_update_display_mm:
+ * @channel: a #SpiceMainChannel
+ * @id: display ID
+ * @width_mm: physical display width in millimeters
+ * @height_mm: physical display height in millimeters
+ * @update: if %TRUE, update guest resolution after 1sec.
+ *
+ * Update the display @id physical size.
+ *
+ * If @update is %TRUE, the remote configuration will be updated too
+ * after 1 second without further changes. You can send when you want
+ * without delay the new configuration to the remote with
+ * spice_main_send_monitor_config()
+ *
+ * Since: 0.39
+ **/
+void spice_main_channel_update_display_mm(SpiceMainChannel *channel, int id,
+                                          int width_mm, int height_mm, gboolean update)
+{
+    SpiceMainChannelPrivate *c;
 
-    if (update)
-        update_display_timer(channel, 1);
+    g_return_if_fail(SPICE_IS_MAIN_CHANNEL(channel));
+    g_return_if_fail(width_mm >= 0);
+    g_return_if_fail(height_mm >= 0);
+
+    c = channel->priv;
+
+    g_return_if_fail(id >= 0 && id < SPICE_N_ELEMENTS(c->display));
+
+    SpiceDisplayConfig config = c->display[id];
+    config.width_mm = width_mm;
+    config.height_mm = height_mm;
+
+    update_display_config(channel, id, &config, update);
 }
 
 /**

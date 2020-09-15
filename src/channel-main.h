@@ -70,6 +70,9 @@ struct _SpiceMainChannelClass {
 
 GType spice_main_channel_get_type(void);
 
+void spice_main_channel_update_display_mm(SpiceMainChannel *channel, int id,
+                                          int width_mm, int height_mm, gboolean update);
+
 void spice_main_channel_update_display(SpiceMainChannel *channel, int id, int x, int y, int width,
                                        int height, gboolean update);
 void spice_main_channel_update_display_enabled(SpiceMainChannel *channel, int id, gboolean enabled,
