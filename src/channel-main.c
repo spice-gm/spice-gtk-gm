@@ -2723,7 +2723,7 @@ void spice_main_channel_update_display(SpiceMainChannel *channel, int id, int x,
 
     c = SPICE_MAIN_CHANNEL(channel)->priv;
 
-    g_return_if_fail(id < SPICE_N_ELEMENTS(c->display));
+    g_return_if_fail(id >= 0 && id < SPICE_N_ELEMENTS(c->display));
 
     SpiceDisplayConfig display = {
         .x = x, .y = y, .width = width, .height = height,
@@ -3040,7 +3040,7 @@ void spice_main_channel_update_display_enabled(SpiceMainChannel *channel, int id
             c->display[i].display_state = display_state;
         }
     } else {
-        g_return_if_fail(id < G_N_ELEMENTS(c->display));
+        g_return_if_fail(id >= 0 && id < G_N_ELEMENTS(c->display));
         if (c->display[id].display_state == display_state)
             return;
         c->display[id].display_state = display_state;
