@@ -2412,18 +2412,14 @@ static gboolean migrate_connect(spice_migrate *mig)
     sport = info->sport;
     host = (char*)info->host_data;
 
-    if (info->cert_subject_size == 0 ||
+    if (info->cert_subject_data == NULL ||
         strlen((const char*)info->cert_subject_data) == 0) {
         /* only verify hostname if no cert subject */
         g_object_set(mig->session, "verify", SPICE_SESSION_VERIFY_HOSTNAME, NULL);
     } else {
-        gchar *subject = g_alloca(info->cert_subject_size + 1);
-        strncpy(subject, (const char*)info->cert_subject_data, info->cert_subject_size);
-        subject[info->cert_subject_size] = '\0';
-
         // session data are already copied
         g_object_set(mig->session,
-                     "cert-subject", subject,
+                     "cert-subject", info->cert_subject_data,
                      "verify", SPICE_SESSION_VERIFY_SUBJECT,
                      NULL);
     }
