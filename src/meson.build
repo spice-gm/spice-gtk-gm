@@ -199,7 +199,7 @@ spice_client_glib_age = 6
 spice_client_glib_so_version = '@0@.@1@.@2@'.format(spice_client_glib_current - spice_client_glib_age,
                                                     spice_client_glib_age,
                                                     spice_client_glib_revision)
-message('libspice-client-glib.so version: ' + spice_client_glib_so_version)
+summary_info += {'libspice-client-glib.so version': spice_client_glib_so_version}
 
 spice_client_glib_lib = library('spice-client-glib-2.0', spice_client_glib_sources,
                                 version : spice_client_glib_so_version,
@@ -373,7 +373,6 @@ if spice_gtk_has_gtk
           input: xml_path,
           output: output_file,
         )
-        message('@0@ @1@: @2@ -> @3@'.format(prog_scanner, output_type, xml_path, output_file))
       endforeach
     endforeach
 
@@ -401,7 +400,7 @@ if spice_gtk_has_gtk
   spice_client_gtk_so_version = '@0@.@1@.@2@'.format(spice_client_gtk_current - spice_client_gtk_age,
                                                      spice_client_gtk_age,
                                                      spice_client_gtk_revision)
-  message('libspice-client-gtk.so version: ' + spice_client_gtk_so_version)
+  summary_info += {'libspice-client-gtk.so version': spice_client_gtk_so_version}
 
   spice_client_gtk_lib = library('spice-client-gtk-3.0', spice_client_gtk_sources,
                                  version : spice_client_gtk_so_version,

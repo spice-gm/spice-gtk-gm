@@ -4,15 +4,17 @@
 project('spice-gtk', 'c',
          version : run_command('build-aux/git-version-gen', '@0@/.tarball-version'.format(meson.source_root()), check : true).stdout().strip(),
          license : 'LGPLv2.1',
-         meson_version : '>= 0.49',
+         meson_version : '>= 0.53',
          default_options : ['buildtype=debugoptimized',
                             'warning_level=2'])
 
 meson.add_dist_script('build-aux/meson-dist', meson.project_version(), meson.source_root())
+summary_info = {}
 
 #
 # global C defines
 #
+summary_info = {'prefix': get_option('prefix')}
 spice_gtk_prefix = get_option('prefix')
 spice_gtk_bindir = spice_gtk_prefix / get_option('bindir')
 spice_gtk_datadir = spice_gtk_prefix / get_option('datadir')
@@ -132,6 +134,7 @@ endforeach
 optional_deps = {'opus' : '>= 0.9.14'}
 foreach dep, version : optional_deps
   d = dependency(dep, required : get_option(dep), version : version)
+  summary_info += {dep: d.found()}
   if d.found()
     spice_glib_deps += d
     spice_gtk_config_data.set('HAVE_@0@'.format(dep.underscorify().to_upper()), '1')
@@ -143,6 +146,7 @@ spice_gtk_has_gtk = false
 gtk_version_required = '3.22'
 d = dependency('gtk+-3.0', version : '>= @0@'.format(gtk_version_required),
                required: get_option('gtk'))
+summary_info += {'gtk': d.found()}
 if d.found()
   spice_gtk_deps += d
   if host_machine.system() != 'windows'
@@ -162,6 +166,7 @@ spice_gtk_has_wayland_protocols = false
 # Check if gtk is enabled and supports the wayland backend
 if host_machine.system() != 'windows' and spice_gtk_has_gtk and compiler.has_header('gtk-3.0/gdk/gdkwayland.h')
   d = dependency('wayland-protocols', version: '>= 1.17', required: get_option('wayland-protocols'))
+  summary_info += {'wayland-protocols': d.found()}
   if d.found()
     spice_gtk_config_data.set('HAVE_WAYLAND_PROTOCOLS', '1')
     dir_wp_base = d.get_pkgconfig_variable('pkgdatadir')
@@ -179,6 +184,7 @@ endif
 # webdav
 spice_gtk_has_phodav = false
 phodav_dep = dependency('libphodav-2.0', required: get_option('webdav'))
+summary_info += {'webdav': phodav_dep.found()}
 if phodav_dep.found()
   spice_glib_deps += phodav_dep
   d = dependency('libsoup-2.4', version : '>= 2.49.91', required: get_option('webdav'))
@@ -205,6 +211,7 @@ if get_option('builtin-mjpeg')
   spice_gtk_config_data.set('HAVE_BUILTIN_MJPEG', '1')
   spice_gtk_has_builtin_mjpeg = true
 endif
+summary_info += {'builtin-mjpeg': get_option('builtin-mjpeg')}
 
 # usbredir
 spice_gtk_has_usbredir = false
@@ -213,6 +220,7 @@ usbredir_version_info = '>= @0@'.format(usbredir_version)
 d1 = dependency('libusbredirparser-0.5', version: usbredir_version_info, required : get_option('usbredir'))
 d2 = dependency('libusbredirhost', version: usbredir_version_info, required : get_option('usbredir'))
 d3 = dependency('libusb-1.0', version : '>= 1.0.21', required : get_option('usbredir'))
+summary_info += {'usbredir': d1.found() and d2.found() and d3.found()}
 if d1.found() and d2.found() and d3.found()
   if target_machine.endian() == 'little'
     spice_glib_deps += [d1, d2, d3]
@@ -225,6 +233,7 @@ if d1.found() and d2.found() and d3.found()
 endif
 
 d = dependency('libcap-ng', required : get_option('libcap-ng'))
+summary_info += {'libcap-ng': d.found()}
 if d.found()
   spice_gtk_config_data.set('USE_LIBCAP_NG', '1')
   spice_acl_deps += d
@@ -233,6 +242,7 @@ endif
 # polkit
 spice_gtk_has_polkit = false
 d = dependency('polkit-gobject-1', version : '>= 0.101', required : get_option('polkit'))
+summary_info += {'polkit': d.found()}
 if d.found()
   spice_gtk_policy_dir = d.get_pkgconfig_variable('policydir')
 
@@ -260,6 +270,7 @@ spice_gtk_has_pie = false
 if get_option('pie')
   spice_gtk_has_pie = true
 endif
+summary_info += {'pie': spice_gtk_has_pie}
 
 # usb-acl-helper-dir
 spice_gtk_usb_acl_helper_dir = get_option('usb-acl-helper-dir')
@@ -267,6 +278,7 @@ if spice_gtk_usb_acl_helper_dir.strip() == ''
   spice_gtk_usb_acl_helper_dir = spice_gtk_prefix / get_option('libexecdir')
 endif
 spice_gtk_config_data.set_quoted('ACL_HELPER_PATH', spice_gtk_usb_acl_helper_dir)
+summary_info += {'usb-acl-helper-dir': spice_gtk_usb_acl_helper_dir}
 
 # usb-ids-path
 spice_gtk_usb_ids_path = get_option('usb-ids-path')
@@ -276,6 +288,7 @@ if spice_gtk_usb_ids_path.strip() == ''
     spice_gtk_usb_ids_path = usbutils.get_pkgconfig_variable('usbids')
   endif
 endif
+summary_info += {'usb-ids-path': spice_gtk_usb_ids_path}
 
 if spice_gtk_usb_ids_path.strip() != ''
   spice_gtk_config_data.set('WITH_USBIDS', '1')
@@ -311,6 +324,7 @@ endif
 if spice_gtk_coroutine == 'winfiber'
   spice_gtk_config_data.set('WITH_WINFIBER', '1')
 endif
+summary_info += {'coroutine': spice_gtk_coroutine}
 
 # introspection
 spice_gtk_has_introspection = false
@@ -319,6 +333,7 @@ if d.found()
   spice_glib_deps += d
   spice_gtk_has_introspection = true
 endif
+summary_info += {'introspection': spice_gtk_has_introspection}
 
 # vala (depends on introspection)
 spice_gtk_has_vala = false
@@ -329,6 +344,7 @@ if d.found()
   endif
   spice_gtk_has_vala = true
 endif
+summary_info += {'vapi': spice_gtk_has_vala}
 
 # lz4
 d = dependency('liblz4', required : get_option('lz4'))
@@ -336,6 +352,7 @@ if d.found()
   spice_glib_deps += d
   spice_gtk_config_data.set('USE_LZ4', '1')
 endif
+summary_info += {'lz4': d.found()}
 
 # sasl
 d = dependency('libsasl2', required : get_option('sasl'))
@@ -343,6 +360,7 @@ if d.found()
   spice_glib_deps += d
   spice_gtk_config_data.set('HAVE_SASL', '1')
 endif
+summary_info += {'sasl': d.found()}
 
 # smartcard check
 d = dependency('libcacard', version : '>= 2.5.1', required : get_option('smartcard'))
@@ -350,6 +368,7 @@ if d.found()
   spice_glib_deps += d
   spice_gtk_config_data.set('USE_SMARTCARD', '1')
 endif
+summary_info += {'smartcard': d.found()}
 
 # valgrind
 if get_option('valgrind')
@@ -358,7 +377,7 @@ if get_option('valgrind')
   endif
   spice_gtk_config_data.set('HAVE_VALGRIND', '1')
 endif
-
+summary_info += {'valgrind': get_option('valgrind')}
 #
 # global C defines
 #
@@ -407,11 +426,11 @@ subdir('tests')
 if build_machine.system() == 'windows'
   message('Disabling gtk-doc while building on Windows')
 else
-  if find_program('gtkdoc-scan', required : get_option('gtk_doc')).found()
+  d = find_program('gtkdoc-scan', required : get_option('gtk_doc'))
+  if d.found()
     subdir('doc')
-  else
-    message('Not building documentation as gtk-doc was not found')
   endif
+  summary_info += {'gtk_doc': d.found()}
 endif
 subdir('data')
 subdir('man')
@@ -438,3 +457,5 @@ if spice_gtk_has_gtk
                      requires : ['spice-client-glib-2.0', 'gtk+-3.0', 'glib-2.0', 'gobject-2.0'],
                      variables : 'exec_prefix=${prefix}')
 endif
+
+summary(summary_info, bool_yn: true)
