@@ -2396,14 +2396,11 @@ static gboolean main_migrate_handshake_done(spice_migrate *mig)
 /* main context */
 static gboolean migrate_connect(spice_migrate *mig)
 {
-    SpiceChannelPrivate  *c;
     int port, sport;
     const char *host;
 
     g_return_val_if_fail(mig != NULL, FALSE);
     g_return_val_if_fail(mig->nchannels == 0, FALSE);
-    c = SPICE_CHANNEL(mig->src_channel)->priv;
-    g_return_val_if_fail(c != NULL, FALSE);
     g_return_val_if_fail(mig->session != NULL, FALSE);
 
     spice_session_set_migration_state(mig->session, SPICE_SESSION_MIGRATION_CONNECTING);
