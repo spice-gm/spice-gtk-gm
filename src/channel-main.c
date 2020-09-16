@@ -2460,10 +2460,11 @@ static void main_migrate_connect(SpiceChannel *channel,
     mig->src_channel = channel;
     mig->info = *dst_info;
     if (dst_info->host_data) {
-        mig->info.host_data = (void *) g_strdup((char*) dst_info->host_data);
+        mig->info.host_data = (void *) g_strndup((char*) dst_info->host_data, dst_info->host_size);
     }
     if (dst_info->cert_subject_data) {
-        mig->info.cert_subject_data = (void *) g_strdup((char*) dst_info->cert_subject_data);
+        mig->info.cert_subject_data = (void *) g_strndup((char*) dst_info->cert_subject_data,
+                                                         dst_info->cert_subject_size);
     }
     mig->from = coroutine_self();
     mig->do_seamless = do_seamless;
