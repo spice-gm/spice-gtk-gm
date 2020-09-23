@@ -418,7 +418,7 @@ static void usbredir_write_flush_callback(void *user_data)
         return;
     }
     if (is_channel_ready(ch->usbredir_channel)) {
-        if (ch->state == USB_CHANNEL_STATE_HOST) {
+        if (ch->state != USB_CHANNEL_STATE_PARSER && ch->usbredirhost != NULL) {
             SPICE_DEBUG("%s ch %p -> usbredirhost", __FUNCTION__, ch);
             usbredirhost_write_guest_data(ch->usbredirhost);
         } else {
