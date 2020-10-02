@@ -1947,6 +1947,9 @@ static void main_agent_handle_xfer_status(SpiceMainChannel *channel,
                 error = g_error_new_literal(G_IO_ERROR, err->error_code,
                                             _("Invalid filename of transferred file"));
                 break;
+            /* Note that if the switch doesn't handle some code, "error" is
+             * left NULL so it will be treated as default error and
+             * assigned a generic message. This is a wanted behaviour. */
             }
         }
         if (error == NULL) {
