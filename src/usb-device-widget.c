@@ -220,8 +220,10 @@ empty_cd_clicked_cb(GtkToggleButton *toggle, gpointer user_data)
 
         rc = spice_usb_device_manager_create_shared_cd_device(priv->manager, filename, &err);
         if (!rc && err != NULL) {
+            const gchar *basename = g_path_get_basename(filename);
             gchar *err_msg = g_strdup_printf(_("shared CD %s, %s"),
-                                             g_path_get_basename(filename), err->message);
+                                             basename, err->message);
+            g_free((gpointer)basename);
 
             SPICE_DEBUG("Failed to create %s", err_msg);
             spice_usb_device_widget_add_err_msg(self, err_msg);
