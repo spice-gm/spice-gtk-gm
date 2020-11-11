@@ -113,6 +113,13 @@ static gboolean spice_usbutil_parse_usbids(gchar *path)
         usbids_vendor_count++;
     }
 
+    if (usbids_vendor_info == 0 || product_count == 0) {
+        usbids_vendor_count = -1;
+        g_strfreev(lines);
+        g_free(contents);
+        return FALSE;
+    }
+
     usbids_vendor_info = g_new(usb_vendor_info, usbids_vendor_count);
     product_info = g_new(usb_product_info, product_count);
 
