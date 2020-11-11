@@ -439,7 +439,6 @@ sink_event_probe(GstPad *pad, GstPadProbeInfo *info, gpointer data)
         if (l) {
             SpiceGstFrame *gstframe = l->data;
             const SpiceFrame *frame = gstframe->encoded_frame;
-            int64_t duration = g_get_monotonic_time() - frame->creation_time;
             /* Note that queue_len (the length of the queue prior to adding
              * this frame) is crucial to correctly interpret the decoding time:
              * - Less than MAX_DECODED_FRAMES means nothing blocked the
@@ -450,7 +449,8 @@ sink_event_probe(GstPad *pad, GstPadProbeInfo *info, gpointer data)
             record(frames_stats,
                    "frame mm_time %u size %u creation time %" PRId64
                    " decoded time %" PRId64 " queue %u before %u",
-                   frame->mm_time, frame->size, frame->creation_time, duration,
+                   frame->mm_time, frame->size, frame->creation_time,
+                   g_get_monotonic_time() - frame->creation_time,
                    decoder->decoding_queue->length, gstframe->queue_len);
 
             if (!decoder->appsink) {
