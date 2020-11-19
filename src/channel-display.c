@@ -1971,7 +1971,7 @@ static void display_handle_surface_create(SpiceChannel *channel, SpiceMsgIn *in)
         create_canvas(channel, surface);
         if (c->mark_false_event_id != 0) {
             g_source_remove(c->mark_false_event_id);
-            c->mark_false_event_id = FALSE;
+            c->mark_false_event_id = 0;
         }
     } else {
         surface->primary = false;
