@@ -1482,6 +1482,9 @@ spice_usb_backend_create_emulated_device(SpiceUsbBackend *be,
         }
     }
 
+    // for static analyzers: it is already checked above
+    g_assert(address < 32);
+
     dev = g_new0(SpiceUsbDevice, 1);
     dev->device_info.bus = BUS_NUMBER_FOR_EMULATED_USB;
     dev->device_info.address = address;
