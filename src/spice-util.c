@@ -231,7 +231,6 @@ gulong spice_g_signal_connect_object (gpointer instance,
                                       GConnectFlags connect_flags)
 {
     GObject *instance_obj = G_OBJECT (instance);
-    WeakHandlerCtx *ctx = whc_new (instance_obj, gobject);
 
     g_return_val_if_fail (G_TYPE_CHECK_INSTANCE (instance), 0);
     g_return_val_if_fail (detailed_signal != NULL, 0);
@@ -240,6 +239,7 @@ gulong spice_g_signal_connect_object (gpointer instance,
     g_return_val_if_fail (
                           (connect_flags & ~(G_CONNECT_AFTER|G_CONNECT_SWAPPED)) == 0, 0);
 
+    WeakHandlerCtx *ctx = whc_new (instance_obj, gobject);
     if (connect_flags & G_CONNECT_SWAPPED)
         ctx->closure = g_cclosure_new_object_swap (c_handler, gobject);
     else
