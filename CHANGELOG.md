@@ -1,3 +1,26 @@
+v0.39
+=====
+
+- !33 - Remove PulseAudio backend
+- !34 - Remove support to CELT codec
+- !42 - Drop capabilities from usb-acl-helper binary
+- !45 - #123 - Install ACL helper in libexec directory
+- !48 - Add support to Wayland mouse in server mode
+- !49 - #126 - Read all SASL buffer
+- !54 - Add Copy & Paste support over Webdav
+- !58 - Improve input and display on HiDPI displays 
+- !64 - Add support for Physical size display
+- !69 - Fix leak on Display's surface
+- !74 - Fix read overflow on (not seamless) migration code
+- !75 - Fix usb redirect on connect, see [rhbz#1874740]
+- !77 - Fixes buffer overflow in QUIC [CVE-2020-14355]
+- Require polkit >= 0.101
+- Require meson >= 0.53
+- Require glib-2.0 >= 2.52
+
+[rhbz#1874740]: https://bugzilla.redhat.com/show_bug.cgi?id=1874740
+[CVE-2020-14355]: https://bugzilla.redhat.com/show_bug.cgi?id=1885566
+
 v0.38
 =====
 
