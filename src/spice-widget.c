@@ -3588,22 +3588,3 @@ GdkPixbuf *spice_display_get_pixbuf(SpiceDisplay *display)
 
     return pixbuf;
 }
-
-/**
- * spice_display_get_preferred_size:
- * @display: a #SpiceDisplay
- * @width: the preferred width of the display, in physical pixel
- * @height: the preferred height of the display, in physical pixel
- *
- * Get the preferred width and height of the display.
- **/
-void spice_display_get_preferred_size(SpiceDisplay *display, int *width, int *height)
-{
-    SpiceDisplayPrivate *d = display->priv;
-
-    if (width)
-        *width = d->area.width;
-
-    if (height)
-        *height = d->area.height;
-}

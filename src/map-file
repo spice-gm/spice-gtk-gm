@@ -33,7 +33,6 @@ spice_display_channel_gl_draw_done;
 spice_display_get_gl_scanout;
 spice_display_get_grab_keys;
 spice_display_get_pixbuf;
-spice_display_get_preferred_size;
 spice_display_get_primary;
 spice_display_get_type;
 spice_display_gl_draw_done;

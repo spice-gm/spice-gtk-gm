@@ -587,7 +587,8 @@ static void menu_cb_resize_to(GtkAction *action G_GNUC_UNUSED,
     spin_x = gtk_spin_button_new_with_range(0, G_MAXINT, 10);
     spin_y = gtk_spin_button_new_with_range(0, G_MAXINT, 10);
 
-    spice_display_get_preferred_size(SPICE_DISPLAY(win->spice), &width, &height);
+    gtk_widget_get_preferred_width(win->spice, NULL, &width);
+    gtk_widget_get_preferred_height(win->spice, NULL, &height);
 
     gtk_spin_button_set_value(GTK_SPIN_BUTTON(spin_width), width);
     gtk_spin_button_set_value(GTK_SPIN_BUTTON(spin_height), height);
