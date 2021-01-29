@@ -431,7 +431,7 @@ void spice_egl_resize_display(SpiceDisplay *display, int w, int h)
     SpiceDisplayPrivate *d = display->priv;
     int prog;
 
-    if (!gl_make_current(display, NULL))
+    if (!d->egl.context_ready || !gl_make_current(display, NULL))
         return;
 
     glGetIntegerv(GL_CURRENT_PROGRAM, &prog);
