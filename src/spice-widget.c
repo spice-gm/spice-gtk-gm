@@ -3385,6 +3385,10 @@ static void channel_new(SpiceSession *s, SpiceChannel *channel, SpiceDisplay *di
         spice_g_signal_connect_object(channel, "notify::gl-scanout",
                                       G_CALLBACK(spice_display_widget_gl_scanout),
                                       display, G_CONNECT_SWAPPED);
+
+        if (spice_display_channel_get_gl_scanout(d->display)) {
+            spice_display_widget_gl_scanout(display);
+        }
 #if HAVE_EGL
         spice_g_signal_connect_object(channel, "gl-draw",
                                       G_CALLBACK(gl_draw), display, G_CONNECT_SWAPPED);
