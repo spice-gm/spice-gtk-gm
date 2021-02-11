@@ -141,7 +141,7 @@ void spice_cairo_draw_event(SpiceDisplay *display, cairo_t *cr)
 }
 
 G_GNUC_INTERNAL
-gboolean spice_cairo_is_scaled(SpiceDisplay *display)
+gboolean spice_allow_scaling(SpiceDisplay *display)
 {
     SpiceDisplayPrivate *d = display->priv;
     return d->allow_scaling;

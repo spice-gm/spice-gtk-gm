@@ -1364,7 +1364,7 @@ static void recalc_geometry(GtkWidget *widget)
     gint scale_factor, height_mm = 0, width_mm = 0;
     bool has_display_mm = false;
 
-    if (spice_cairo_is_scaled(display))
+    if (spice_allow_scaling(display))
         zoom = (gdouble)d->zoom_level / 100;
 
     scale_factor = gtk_widget_get_scale_factor(GTK_WIDGET(display));
@@ -3137,7 +3137,7 @@ void spice_display_get_scaling(SpiceDisplay *display,
         wh = fbh;
     }
 
-    if (!spice_cairo_is_scaled(display)) {
+    if (!spice_allow_scaling(display)) {
         s = 1.0;
         x = 0;
         y = 0;
