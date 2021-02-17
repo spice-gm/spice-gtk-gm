@@ -241,6 +241,7 @@ gboolean spicy_connect_dialog(SpiceSession *session)
 
     info.loop = g_main_loop_new(NULL, FALSE);
     g_main_loop_run(info.loop);
+    g_clear_pointer(&info.loop, g_main_loop_unref);
 
     gtk_widget_destroy(GTK_WIDGET(window));
 
