@@ -1899,6 +1899,9 @@ static void connection_disconnect(spice_connection *conn)
 static void connection_destroy(SpiceSession *session,
                                spice_connection *conn)
 {
+    for (int i = 0; i < SPICE_N_ELEMENTS(conn->wins); i++) {
+        destroy_spice_window(conn->wins[i]);
+    }
     g_object_unref(conn->session);
     g_hash_table_unref(conn->transfers);
     g_free(conn);
