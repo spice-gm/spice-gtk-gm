@@ -41,6 +41,7 @@ struct _SpiceGstaudioPrivate {
     struct stream           playback;
     struct stream           record;
     guint                   mmtime_id;
+    guint                   rbus_watch_id;
 };
 
 G_DEFINE_TYPE_WITH_PRIVATE(SpiceGstaudio, spice_gstaudio, SPICE_TYPE_AUDIO)
@@ -77,6 +78,10 @@ static void spice_gstaudio_dispose(GObject *obj)
     p = gstaudio->priv;
 
     stream_dispose(&p->playback);
+    if (p->rbus_watch_id > 0) {
+        g_source_remove(p->rbus_watch_id);
+        p->rbus_watch_id = 0;
+    }
     stream_dispose(&p->record);
 
     if (p->pchannel)
@@ -191,6 +196,10 @@ static void record_start(SpiceRecordChannel *channel, gint format, gint channels
         (p->record.rate != frequency ||
          p->record.channels != channels)) {
         gst_element_set_state(p->record.pipe, GST_STATE_NULL);
+        if (p->rbus_watch_id > 0) {
+            g_source_remove(p->rbus_watch_id);
+            p->rbus_watch_id = 0;
+        }
         g_clear_pointer(&p->record.pipe, gst_object_unref);
     }
 
@@ -211,7 +220,7 @@ static void record_start(SpiceRecordChannel *channel, gint format, gint channels
         }
 
         bus = gst_pipeline_get_bus(GST_PIPELINE(p->record.pipe));
-        gst_bus_add_watch(bus, record_bus_cb, data);
+        p->rbus_watch_id = gst_bus_add_watch(bus, record_bus_cb, data);
         gst_object_unref(GST_OBJECT(bus));
 
         p->record.src = gst_bin_get_by_name(GST_BIN(p->record.pipe), "audiosrc");
