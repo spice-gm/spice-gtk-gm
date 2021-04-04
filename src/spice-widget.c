@@ -73,7 +73,8 @@
  * The widget will optionally grab the keyboard and the mouse when
  * focused if the properties #SpiceDisplay:grab-keyboard and
  * #SpiceDisplay:grab-mouse are #TRUE respectively.  It can be
- * ungrabbed with spice_display_mouse_ungrab(), and by setting a key
+ * ungrabbed with spice_display_keyboard_ungrab() and
+ * spice_display_mouse_ungrab(), and by setting a key
  * combination with spice_display_set_grab_keys().
  *
  * Finally, spice_display_get_pixbuf() will take a screenshot of the
@@ -3514,6 +3515,21 @@ SpiceDisplay* spice_display_new_with_monitor(SpiceSession *session, gint channel
                         "channel-id", channel_id,
                         "monitor-id", monitor_id,
                         NULL);
+}
+
+/**
+ * spice_display_keyboard_ungrab:
+ * @display: a #SpiceDisplay
+ *
+ * Ungrab the keyboard.
+ *
+ * Since: 0.40
+ **/
+void spice_display_keyboard_ungrab(SpiceDisplay *display)
+{
+    g_return_if_fail(SPICE_IS_DISPLAY(display));
+
+    try_keyboard_ungrab(display);
 }
 
 /**

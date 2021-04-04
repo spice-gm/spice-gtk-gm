@@ -2,6 +2,7 @@ spice_display_get_grab_keys
 spice_display_get_pixbuf
 spice_display_get_type
 spice_display_key_event_get_type
+spice_display_keyboard_ungrab
 spice_display_mouse_ungrab
 spice_display_new
 spice_display_new_with_monitor
