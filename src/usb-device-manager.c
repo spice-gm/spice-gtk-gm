@@ -67,6 +67,8 @@
  * spice_usb_device_manager_get() which ensures this 1:1 relation.
  */
 
+G_STATIC_ASSERT(sizeof(SpiceUsbDeviceManagerClass) == sizeof(GObjectClass) + 14 * sizeof(gpointer));
+
 enum {
     PROP_0,
     PROP_SESSION,

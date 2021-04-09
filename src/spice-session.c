@@ -34,6 +34,8 @@
 #include "channel-playback-priv.h"
 #include "spice-audio-priv.h"
 
+G_STATIC_ASSERT(sizeof(SpiceSessionClass) == sizeof(GObjectClass) + 12 * sizeof(gpointer));
+
 #if !defined(SOL_TCP) && defined(IPPROTO_TCP)
 #define SOL_TCP IPPROTO_TCP
 #endif

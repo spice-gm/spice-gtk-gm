@@ -43,6 +43,8 @@
  * guest using 3 certificates available to the client).
  */
 
+G_STATIC_ASSERT(sizeof(SpiceSmartcardManagerClass) == sizeof(GObjectClass) + 14 * sizeof(gpointer));
+
 struct _SpiceSmartcardManagerPrivate {
     guint monitor_id;
 

@@ -42,6 +42,8 @@
 #include "spice-audio-priv.h"
 #include "spice-gstaudio.h"
 
+G_STATIC_ASSERT(sizeof(SpiceAudioClass) == sizeof(GObjectClass) + 11 * sizeof(gpointer));
+
 G_DEFINE_ABSTRACT_TYPE_WITH_PRIVATE(SpiceAudio, spice_audio, G_TYPE_OBJECT)
 
 enum {
