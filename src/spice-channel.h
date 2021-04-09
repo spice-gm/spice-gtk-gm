@@ -119,7 +119,7 @@ struct _SpiceChannelClass
      * If adding fields to this struct, remove corresponding
      * amount of padding to avoid changing overall struct size
      */
-    gchar _spice_reserved[SPICE_RESERVED_PADDING - 2 * sizeof(void *)];
+    gpointer _spice_reserved[8];
 };
 
 GType spice_channel_get_type(void);

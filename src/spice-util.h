@@ -37,7 +37,8 @@ gchar* spice_uuid_to_string(const guint8 uuid[16]);
             g_debug(G_STRLOC " " fmt, ## __VA_ARGS__);          \
     } while (0)
 
-#define SPICE_RESERVED_PADDING (10 * sizeof(void*))
+
+#define SPICE_RESERVED_PADDING (10 * sizeof(void*)) GLIB_DEPRECATED_MACRO
 
 G_END_DECLS
 

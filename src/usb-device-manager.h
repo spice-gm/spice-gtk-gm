@@ -93,7 +93,7 @@ struct _SpiceUsbDeviceManagerClass
      * If adding fields to this struct, remove corresponding
      * amount of padding to avoid changing overall struct size
      */
-    gchar _spice_reserved[SPICE_RESERVED_PADDING];
+    gpointer _spice_reserved[10];
 };
 
 GType spice_usb_device_get_type(void);
