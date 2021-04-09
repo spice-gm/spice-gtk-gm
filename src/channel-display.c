@@ -683,9 +683,9 @@ void spice_display_channel_change_preferred_video_codec_type(SpiceChannel *chann
 }
 
 /**
- * spice_display_channel_change_preferred_video_codecs_types:
+ * spice_display_channel_change_preferred_video_codec_types:
  * @channel: a #SpiceDisplayChannel
- * @codecs: an array of @ncodecs #SpiceVideoCodecType types
+ * @codecs: (array length=ncodecs): an array of @ncodecs #SpiceVideoCodecType types
  * @ncodecs: the number of codec types in the @codecs array
  * @err: #GError describing the reason why the change failed
  *
