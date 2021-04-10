@@ -506,8 +506,8 @@ static void spice_display_channel_class_init(SpiceDisplayChannelClass *klass)
 }
 
 /**
- * spice_display_get_primary:
- * @channel: a #SpiceDisplayChannel
+ * spice_display_get_primary: (method)
+ * @channel: (type SpiceDisplayChannel): a #SpiceDisplayChannel
  * @surface_id: a surface id
  * @primary: a #SpiceDisplayPrimary
  *
@@ -525,8 +525,8 @@ gboolean spice_display_get_primary(SpiceChannel *channel, guint32 surface_id,
 }
 
 /**
- * spice_display_channel_get_primary:
- * @channel: a #SpiceDisplayChannel
+ * spice_display_channel_get_primary: (method)
+ * @channel: (type SpiceDisplayChannel): a #SpiceDisplayChannel
  * @surface_id: a surface id
  * @primary: a #SpiceDisplayPrimary
  *
@@ -564,8 +564,8 @@ gboolean spice_display_channel_get_primary(SpiceChannel *channel, guint32 surfac
 }
 
 /**
- * spice_display_change_preferred_compression:
- * @channel: a #SpiceDisplayChannel
+ * spice_display_change_preferred_compression: (method)
+ * @channel: (type SpiceDisplayChannel): a #SpiceDisplayChannel
  * @compression: a #SpiceImageCompression
  *
  * Tells the spice server to change the preferred image compression
@@ -580,8 +580,8 @@ void spice_display_change_preferred_compression(SpiceChannel *channel, gint comp
 }
 
 /**
- * spice_display_channel_change_preferred_compression:
- * @channel: a #SpiceDisplayChannel
+ * spice_display_channel_change_preferred_compression: (method)
+ * @channel: (type SpiceDisplayChannel): a #SpiceDisplayChannel
  * @compression: a #SpiceImageCompression
  *
  * Tells the spice server to change the preferred image compression
@@ -635,8 +635,8 @@ static void spice_display_send_client_preferred_video_codecs(SpiceChannel *chann
 }
 
 /**
- * spice_display_change_preferred_video_codec_type:
- * @channel: a #SpiceDisplayChannel
+ * spice_display_change_preferred_video_codec_type: (method)
+ * @channel: (type SpiceDisplayChannel): a #SpiceDisplayChannel
  * @codec_type: a #SpiceVideoCodecType
  *
  * Tells the spice server to change the preferred video codec type for
@@ -652,8 +652,8 @@ void spice_display_change_preferred_video_codec_type(SpiceChannel *channel, gint
 }
 
 /**
- * spice_display_channel_change_preferred_video_codec_type:
- * @channel: a #SpiceDisplayChannel
+ * spice_display_channel_change_preferred_video_codec_type: (method)
+ * @channel: (type SpiceDisplayChannel): a #SpiceDisplayChannel
  * @codec_type: a #SpiceVideoCodecType
  *
  * Tells the spice server to change the preferred video codec type for
@@ -683,8 +683,8 @@ void spice_display_channel_change_preferred_video_codec_type(SpiceChannel *chann
 }
 
 /**
- * spice_display_channel_change_preferred_video_codec_types:
- * @channel: a #SpiceDisplayChannel
+ * spice_display_channel_change_preferred_video_codec_types: (method)
+ * @channel: (type SpiceDisplayChannel): a #SpiceDisplayChannel
  * @codecs: (array length=ncodecs): an array of @ncodecs #SpiceVideoCodecType types
  * @ncodecs: the number of codec types in the @codecs array
  * @err: #GError describing the reason why the change failed
