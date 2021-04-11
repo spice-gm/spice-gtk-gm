@@ -288,7 +288,7 @@ static void spice_display_channel_class_init(SpiceDisplayChannelClass *klass)
                            G_PARAM_STATIC_STRINGS));
 
     /**
-     * SpiceDisplayChannel:monitors:
+     * SpiceDisplayChannel:monitors: (type GArray(SpiceDisplayMonitorConfig))
      *
      * Current monitors configuration.
      *
