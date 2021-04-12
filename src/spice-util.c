@@ -122,7 +122,7 @@ gboolean spice_strv_contains(const GStrv strv, const gchar *str)
 
 /**
  * spice_uuid_to_string:
- * @uuid: UUID byte array
+ * @uuid: (array fixed-size=16): UUID byte array
  *
  * Creates a string representation of @uuid, of the form
  * "06e023d5-86d8-420e-8103-383e4566087a"
