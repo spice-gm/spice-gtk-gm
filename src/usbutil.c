@@ -113,7 +113,7 @@ static gboolean spice_usbutil_parse_usbids(gchar *path)
         usbids_vendor_count++;
     }
 
-    if (usbids_vendor_info == 0 || product_count == 0) {
+    if (usbids_vendor_count == 0 || product_count == 0) {
         usbids_vendor_count = -1;
         g_strfreev(lines);
         g_free(contents);
