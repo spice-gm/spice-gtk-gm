@@ -646,7 +646,7 @@ static void spice_main_channel_class_init(SpiceMainChannelClass *klass)
      * SpiceMainChannel::main-clipboard:
      * @main: the #SpiceMainChannel that emitted the signal
      * @type: the VD_AGENT_CLIPBOARD data type
-     * @data: clipboard data
+     * @data: (element-type guint8) (array length=size): clipboard data
      * @size: size of @data in bytes
      *
      * Provides guest clipboard data requested by spice_main_clipboard_request().
@@ -669,7 +669,7 @@ static void spice_main_channel_class_init(SpiceMainChannelClass *klass)
      * @main: the #SpiceMainChannel that emitted the signal
      * @selection: a VD_AGENT_CLIPBOARD_SELECTION clipboard
      * @type: the VD_AGENT_CLIPBOARD data type
-     * @data: clipboard data
+     * @data: (element-type guint8) (array length=size): clipboard data
      * @size: size of @data in bytes
      *
      * Informs that clipboard selection data are available.
@@ -690,7 +690,7 @@ static void spice_main_channel_class_init(SpiceMainChannelClass *klass)
     /**
      * SpiceMainChannel::main-clipboard-grab:
      * @main: the #SpiceMainChannel that emitted the signal
-     * @types: the VD_AGENT_CLIPBOARD data types
+     * @types: (element-type guint32) (array length=ntypes): the VD_AGENT_CLIPBOARD data types
      * @ntypes: the number of @types
      *
      * Inform when clipboard data is available from the guest, and for
@@ -713,7 +713,7 @@ static void spice_main_channel_class_init(SpiceMainChannelClass *klass)
      * SpiceMainChannel::main-clipboard-selection-grab:
      * @main: the #SpiceMainChannel that emitted the signal
      * @selection: a VD_AGENT_CLIPBOARD_SELECTION clipboard
-     * @types: the VD_AGENT_CLIPBOARD data types
+     * @types: (element-type guint32) (array length=ntypes): the VD_AGENT_CLIPBOARD data types
      * @ntypes: the number of @types
      *
      * Inform when clipboard data is available from the guest, and for
