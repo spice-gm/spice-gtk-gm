@@ -1379,9 +1379,11 @@ static void recalc_geometry(GtkWidget *widget)
         width_mm = gdk_monitor_get_width_mm(monitor);
         gdk_monitor_get_geometry(monitor, &geometry);
         /* FIXME: gives wrong results atm: https://gitlab.gnome.org/GNOME/gtk/-/issues/3066 */
-        width_mm = (width_mm * d->ww / geometry.width) / zoom * scale_factor;
-        height_mm = (height_mm * d->wh / geometry.height) / zoom * scale_factor;
-        has_display_mm = true;
+        if (geometry.width > 0 && geometry.height > 0) {
+            width_mm = (width_mm * d->ww / geometry.width) / zoom * scale_factor;
+            height_mm = (height_mm * d->wh / geometry.height) / zoom * scale_factor;
+            has_display_mm = true;
+        }
     }
 
     DISPLAY_DEBUG(display,
