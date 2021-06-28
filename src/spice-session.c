@@ -239,11 +239,11 @@ GType
 spice_image_compress_get_type (void)
 {
   static GType type = 0;
-  static volatile gsize type_volatile = 0;
+  static gsize type_once = 0;
 
-  if (g_once_init_enter(&type_volatile)) {
+  if (g_once_init_enter(&type_once)) {
     type = g_enum_register_static ("SpiceImageCompress", _spice_image_compress_values);
-    g_once_init_leave(&type_volatile, type);
+    g_once_init_leave(&type_once, type);
   }
 
   return type;

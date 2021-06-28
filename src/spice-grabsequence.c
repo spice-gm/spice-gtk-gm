@@ -29,14 +29,14 @@
 GType spice_grab_sequence_get_type(void)
 {
 	static GType grab_sequence_type = 0;
-	static volatile gsize grab_sequence_type_volatile;
+	static gsize grab_sequence_type_once;
 
-	if (g_once_init_enter(&grab_sequence_type_volatile)) {
+	if (g_once_init_enter(&grab_sequence_type_once)) {
 		grab_sequence_type = g_boxed_type_register_static
 			("SpiceGrabSequence",
 			 (GBoxedCopyFunc)spice_grab_sequence_copy,
 			 (GBoxedFreeFunc)spice_grab_sequence_free);
-		g_once_init_leave(&grab_sequence_type_volatile,
+		g_once_init_leave(&grab_sequence_type_once,
 				  grab_sequence_type);
 	}
 
