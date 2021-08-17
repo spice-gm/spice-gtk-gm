@@ -1143,8 +1143,8 @@ static void cd_scsi_cmd_read_capacity(CdScsiLU *dev, CdScsiRequest *req)
     req->xfer_dir = SCSI_XFER_FROM_DEV;
     req->req_len = 8;
 
-    *last_blk_out = htobe32(last_blk);
-    *blk_size_out = htobe32(blk_size);
+    *last_blk_out = GUINT32_TO_BE(last_blk);
+    *blk_size_out = GUINT32_TO_BE(blk_size);
 
     SPICE_DEBUG("Read capacity, lun:%u last_blk: %u blk_sz: %u",
                 req->lun, last_blk, blk_size);

@@ -26,15 +26,6 @@
 #include "cd-usb-bulk-msd.h"
 #include "scsi-constants.h"
 
-#if defined(G_OS_WIN32)
-#include <winsock2.h>
-#include <windows.h>
-/* Windows is always LE at the moment */
-#define le32toh(x)          (x)
-#define htole32(x)          (x)
-#define htobe32(x)          htonl(x)
-#endif
-
 typedef enum ScsiXferDir {
     SCSI_XFER_NONE = 0,  /* TEST_UNIT_READY, ...           */
     SCSI_XFER_FROM_DEV,  /* READ, INQUIRY, MODE_SENSE, ... */

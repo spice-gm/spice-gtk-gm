@@ -266,8 +266,8 @@ static int parse_usb_msd_cmd(UsbCdBulkMsdDevice *cd, uint8_t *buf, uint32_t cbw_
         SPICE_ERROR("CMD: Bad CBW size:%u", cbw_len);
         return -1;
     }
-    if (le32toh(cbw->sig) != 0x43425355) { /* MSD command signature */
-        SPICE_ERROR("CMD: Bad CBW signature:%08x", le32toh(cbw->sig));
+    if (GUINT32_FROM_LE(cbw->sig) != 0x43425355) { /* MSD command signature */
+        SPICE_ERROR("CMD: Bad CBW signature:%08x", GUINT32_FROM_LE(cbw->sig));
         return -1;
     }
     const uint8_t cmd_len = cbw->cmd_len & 0x1F;
@@ -277,7 +277,7 @@ static int parse_usb_msd_cmd(UsbCdBulkMsdDevice *cd, uint8_t *buf, uint32_t cbw_
     }
 
     usb_req->lun = cbw->lun;
-    usb_req->usb_req_len = le32toh(cbw->exp_data_len);
+    usb_req->usb_req_len = GUINT32_FROM_LE(cbw->exp_data_len);
 
     usb_req->scsi_in_len = 0; /* no data from scsi yet */
     usb_req->xfer_len = 0; /* no bulks transfered yet */
@@ -305,11 +305,11 @@ static int parse_usb_msd_cmd(UsbCdBulkMsdDevice *cd, uint8_t *buf, uint32_t cbw_
 
     SPICE_DEBUG("CMD lun:%u tag:%#x flags:%08x "
                 "cdb_len:%u req_len:%u",
-                usb_req->lun, le32toh(cbw->tag), cbw->flags,
+                usb_req->lun, GUINT32_FROM_LE(cbw->tag), cbw->flags,
                 scsi_req->cdb_len, usb_req->usb_req_len);
 
     /* prepare status - CSW */
-    usb_req->csw.sig = htole32(0x53425355);
+    usb_req->csw.sig = GUINT32_TO_LE(0x53425355);
     usb_req->csw.tag = cbw->tag;
     usb_req->csw.residue = 0;
     usb_req->csw.status = (uint8_t)USB_MSD_STATUS_GOOD;
@@ -331,11 +331,11 @@ static void usb_cd_send_status(UsbCdBulkMsdDevice *cd)
     UsbCdBulkMsdRequest *usb_req = &cd->usb_req;
 
     SPICE_DEBUG("Command CSW tag:0x%x msd_status:%d len:%" G_GUINT64_FORMAT,
-                le32toh(usb_req->csw.tag), (int)usb_req->csw.status, sizeof(usb_req->csw));
+                GUINT32_FROM_LE(usb_req->csw.tag), (int)usb_req->csw.status, sizeof(usb_req->csw));
 
     usb_cd_cmd_done(cd);
 
-    g_assert(usb_req->csw.sig == htole32(0x53425355));
+    g_assert(usb_req->csw.sig == GUINT32_TO_LE(0x53425355));
     cd_usb_bulk_msd_read_complete(cd->usb_user_data,
                                   (uint8_t *)&usb_req->csw, sizeof(usb_req->csw),
                                   BULK_STATUS_GOOD);
@@ -346,7 +346,7 @@ static void usb_cd_send_canceled(UsbCdBulkMsdDevice *cd)
     UsbCdBulkMsdRequest *usb_req = &cd->usb_req;
 
     SPICE_DEBUG("Canceled cmd tag:0x%x, len:%" G_GUINT64_FORMAT,
-                le32toh(usb_req->csw.tag), sizeof(usb_req->csw));
+                GUINT32_FROM_LE(usb_req->csw.tag), sizeof(usb_req->csw));
 
     usb_cd_cmd_done(cd);
 
@@ -455,7 +455,7 @@ void cd_scsi_dev_request_complete(void *target_user_data, CdScsiRequest *scsi_re
 
         /* prepare CSW */
         if (usb_req->usb_req_len > usb_req->scsi_in_len) {
-            usb_req->csw.residue = htole32(usb_req->usb_req_len - usb_req->scsi_in_len);
+            usb_req->csw.residue = GUINT32_TO_LE(usb_req->usb_req_len - usb_req->scsi_in_len);
         }
         if (scsi_req->status != GOOD) {
             usb_req->csw.status = (uint8_t)USB_MSD_STATUS_FAILED;
@@ -475,7 +475,7 @@ void cd_scsi_dev_request_complete(void *target_user_data, CdScsiRequest *scsi_re
     } else {
         g_assert(scsi_req->req_state == SCSI_REQ_DISPOSED);
         SPICE_DEBUG("Disposed cmd tag:0x%x, len:%" G_GUINT64_FORMAT,
-                le32toh(usb_req->csw.tag), sizeof(usb_req->csw));
+                GUINT32_FROM_LE(usb_req->csw.tag), sizeof(usb_req->csw));
         usb_cd_cmd_done(cd);
     }
 }
