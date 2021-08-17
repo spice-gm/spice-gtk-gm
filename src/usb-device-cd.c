@@ -37,8 +37,13 @@
 #else
 #include <sys/stat.h>
 #include <sys/ioctl.h>
+#ifdef __APPLE__
+#include <sys/disk.h>
+#include <fcntl.h>
+#else
 #include <linux/fs.h>
 #include <linux/cdrom.h>
+#endif
 #endif
 
 #include "usb-emulation.h"
@@ -118,9 +123,20 @@ static int cd_device_open_stream(SpiceCdLU *unit, const char *filename)
     if (fstat(fd, &file_stat) || file_stat.st_size == 0) {
         file_stat.st_size = 0;
         unit->device = 1;
+#ifdef __APPLE__
+        uint64_t sector_count = 0;
+        uint32_t sector_size = 0;
+
+        if (!ioctl(fd, DKIOCGETBLOCKCOUNT, &sector_count) &&
+            !ioctl(fd, DKIOCGETBLOCKSIZE, &sector_size)) {
+            file_stat.st_size = sector_count;
+            unit->blockSize = sector_size;
+        }
+#else
         if (!ioctl(fd, BLKGETSIZE64, &file_stat.st_size) &&
             !ioctl(fd, BLKSSZGET, &unit->blockSize)) {
         }
+#endif
     }
     unit->size = file_stat.st_size;
     close(fd);
@@ -147,12 +163,22 @@ static int cd_device_load(SpiceCdLU *unit, gboolean load)
     if (fd < 0) {
         return -1;
     }
+#ifdef __APPLE__
+    if (load) {
+        // MacOS has no load command, device is created when there's a CD/DVD
+        error = -1;
+        errno = ENOSYS;
+    } else {
+        error = ioctl(fd, DKIOCEJECT, NULL);
+    }
+#else
     if (load) {
         error = ioctl(fd, CDROMCLOSETRAY, 0);
     } else {
         ioctl(fd, CDROM_LOCKDOOR, 0);
         error = ioctl(fd, CDROMEJECT, 0);
     }
+#endif
     if (error) {
         // note that ejecting might be available only for root
         // loading might be available also for regular user
@@ -173,12 +199,17 @@ static int cd_device_check(SpiceCdLU *unit)
     if (fd < 0) {
         return -1;
     }
+#ifdef __APPLE__
+    // in MacOS device is not created if not present
+    error = 0;
+#else
     error = ioctl(fd, CDROM_DRIVE_STATUS, 0);
     error = (error == CDS_DISC_OK) ? 0 : -1;
     if (!error) {
         error = ioctl(fd, CDROM_DISC_STATUS, 0);
         error = (error == CDS_DATA_1) ? 0 : -1;
     }
+#endif
     close(fd);
     return error;
 }
