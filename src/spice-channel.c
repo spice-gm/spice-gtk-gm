@@ -2633,6 +2633,19 @@ reconnect:
                 spice_session_get_cert_subject(c->session));
         }
 
+#if OPENSSL_VERSION_NUMBER >= 0x0090806fL && !defined(OPENSSL_NO_TLSEXT)
+        {
+            const char *hostname = spice_session_get_host(c->session);
+            // check is not an ip address
+            GInetAddress * ip = g_inet_address_new_from_string(hostname);
+            if (ip == NULL) {
+                SSL_set_tlsext_host_name(c->ssl, hostname);
+            } else {
+                g_object_unref(ip);
+            }
+        }
+#endif
+
 ssl_reconnect:
         rc = SSL_connect(c->ssl);
         if (rc <= 0) {
