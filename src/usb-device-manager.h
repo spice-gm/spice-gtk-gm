@@ -152,6 +152,11 @@ gboolean
 spice_usb_device_manager_is_device_shared_cd(SpiceUsbDeviceManager *manager,
                                              SpiceUsbDevice *device);
 
+SpiceUsbDevice *
+spice_usb_device_manager_allocate_device_for_file_descriptor(SpiceUsbDeviceManager *manager,
+                                                             int file_descriptor,
+                                                             GError **err);
+
 G_END_DECLS
 
 #endif /* __SPICE_USB_DEVICE_MANAGER_H__ */

@@ -49,6 +49,7 @@ struct _SpiceUsbDevice
     /* Pointer to device. Either real device (libusb_device)
      * or emulated one (edev) */
     libusb_device *libusb_device;
+    libusb_device_handle *handle;
     SpiceUsbEmulatedDevice *edev;
     gint ref_count;
     SpiceUsbBackendChannel *attached_to;
@@ -436,6 +437,9 @@ SpiceUsbBackend *spice_usb_backend_new(GError **error)
     SpiceUsbBackend *be;
     SPICE_DEBUG("%s >>", __FUNCTION__);
     be = g_new0(SpiceUsbBackend, 1);
+#ifdef __ANDROID__
+    libusb_set_option(NULL, LIBUSB_OPTION_NO_DEVICE_DISCOVERY);
+#endif
     rc = libusb_init(&be->libusb_context);
     if (rc < 0) {
         const char *desc = libusb_strerror(rc);
@@ -1208,7 +1212,7 @@ gboolean spice_usb_backend_channel_attach(SpiceUsbBackendChannel *ch,
                                           SpiceUsbDevice *dev,
                                           GError **error)
 {
-    int rc;
+    int rc = 0;
     SPICE_DEBUG("%s >> ch %p, dev %p (was attached %p)", __FUNCTION__, ch, dev, ch->attached);
 
     g_return_val_if_fail(dev != NULL, FALSE);
@@ -1222,20 +1226,22 @@ gboolean spice_usb_backend_channel_attach(SpiceUsbBackendChannel *ch,
         return FALSE;
     }
 
-    libusb_device_handle *handle = NULL;
+    libusb_device_handle *handle = dev->handle;
     if (ch->state != USB_CHANNEL_STATE_INITIALIZING) {
         ch->state = USB_CHANNEL_STATE_HOST;
     }
 
-    /*
-       Under Windows we need to avoid updating
-       list of devices when we are acquiring the device
-    */
-    set_redirecting(ch->backend, TRUE);
+    if (!handle) {
+        /*
+            Under Windows we need to avoid updating
+            list of devices when we are acquiring the device
+        */
+        set_redirecting(ch->backend, TRUE);
 
-    rc = libusb_open(dev->libusb_device, &handle);
+        rc = libusb_open(dev->libusb_device, &handle);
 
-    set_redirecting(ch->backend, FALSE);
+        set_redirecting(ch->backend, FALSE);
+    }
 
     if (rc) {
         const char *desc = libusb_strerror(rc);
@@ -1521,4 +1527,33 @@ spice_usb_backend_create_emulated_device(SpiceUsbBackend *be,
     spice_usb_backend_device_unref(dev);
 
     return TRUE;
+}
+
+SpiceUsbDevice *
+spice_usb_backend_allocate_device_for_file_descriptor(SpiceUsbBackend *be,
+                                                      int file_descriptor,
+                                                      GError **err)
+{
+    libusb_device_handle *handle = NULL;
+    libusb_context *ctx = be->libusb_context;
+    if (!ctx) {
+        g_set_error_literal(err, SPICE_CLIENT_ERROR, SPICE_CLIENT_ERROR_FAILED,
+                            _("libusb backend is null"));
+        return NULL;
+    }
+
+    if (libusb_wrap_sys_device(ctx, (intptr_t)file_descriptor, &handle) < 0) {
+        g_set_error_literal(err, SPICE_CLIENT_ERROR, SPICE_CLIENT_ERROR_FAILED,
+                            _("libusb failed to create handle for specified file descriptor"));
+        return NULL;
+    }
+
+    SpiceUsbDevice *device = allocate_backend_device(libusb_get_device(handle));
+    if (!device) {
+        g_set_error_literal(err, SPICE_CLIENT_ERROR, SPICE_CLIENT_ERROR_FAILED,
+                            _("failed to allocate SpiceUsbDevice"));
+    } else {
+        device->handle = handle;
+    }
+    return device;
 }

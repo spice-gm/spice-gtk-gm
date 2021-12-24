@@ -1521,6 +1521,41 @@ spice_usb_device_manager_is_device_shared_cd(SpiceUsbDeviceManager *manager,
 #endif
 }
 
+/**
+ * spice_usb_device_manager_allocate_device_for_file_descriptor:
+ * @manager: (type SpiceUsbDeviceManager): the #SpiceUsbDeviceManager manager.
+ * @file_descriptor: an open file descriptor for the USB device.
+ * @err: (allow-none): a return location for a #GError, or %NULL.
+ *
+ * Allocates a SpiceUsbDevice instance for the specified file descriptor.
+ *
+ * Returns: (nullable) (transfer full): an allocated SpiceUsbDevice instance or %NULL in case of failure.
+ *
+ * Since: 0.40
+ */
+SpiceUsbDevice *
+spice_usb_device_manager_allocate_device_for_file_descriptor(SpiceUsbDeviceManager *manager,
+                                                             int file_descriptor,
+                                                             GError **err)
+{
+#ifdef USE_USBREDIR
+    SpiceUsbDeviceManagerPrivate *priv = manager->priv;
+    if (!priv->context) {
+        g_set_error_literal(err, SPICE_CLIENT_ERROR, SPICE_CLIENT_ERROR_FAILED,
+                            _("libusb backend is null"));
+        return NULL;
+    }
+
+    return spice_usb_backend_allocate_device_for_file_descriptor(priv->context,
+                                                                 file_descriptor,
+                                                                 err);
+#else
+    g_set_error_literal(err, SPICE_CLIENT_ERROR, SPICE_CLIENT_ERROR_FAILED,
+                        _("USB redirection support not compiled in"));
+    return NULL;
+#endif
+}
+
 #ifdef USE_USBREDIR
 /*
  * SpiceUsbDevice

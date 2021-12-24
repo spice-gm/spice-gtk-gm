@@ -93,5 +93,8 @@ void spice_usb_backend_channel_get_guest_filter(SpiceUsbBackendChannel *ch,
                                                 int *count);
 void spice_usb_backend_return_write_data(SpiceUsbBackendChannel *ch, void *data);
 gchar *spice_usb_backend_device_get_description(SpiceUsbDevice *dev, const gchar *format);
+SpiceUsbDevice *spice_usb_backend_allocate_device_for_file_descriptor(SpiceUsbBackend *be,
+                                                                      int file_descriptor,
+                                                                      GError **err);
 
 G_END_DECLS
