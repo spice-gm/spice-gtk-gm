@@ -1,3 +1,21 @@
+v0.40
+=====
+
+- Fix usbid parsing regression introduced in !78 (v0.39)
+- !91 - Fix crash with division by 0 [rhbz#1941627]
+- !97 - #157 - Fix detecting pyparsing module
+- Add API to allocate SpiceUsbDevice (for Android)
+  spice_usb_device_manager_allocate_device_for_file_descriptor()
+- !93 - #137 - add support for TLS-SNI
+- !92 - Support USB emulation for MacOS
+- !96 - Support side mouse buttons
+- !85 - #75 - add spice_display_keyboard_ungrab() 
+- !81 - GL fix warning fix and improve scanout logic
+- !84 - Fix leak and warnings in gstaudio and spicy
+- !86, !87, !90 - Several introspection fixes and improvements
+
+[rhbz#1941627]: https://bugzilla.redhat.com/show_bug.cgi?id=1941627
+
 v0.39
 =====
 
