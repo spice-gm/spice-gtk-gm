@@ -51,6 +51,7 @@ spice_client_glib_headers = [
   'spice-uri.h',
   'spice-util.h',
   'usb-device-manager.h',
+  'sm2.h',
 ]
 
 install_headers(spice_client_glib_headers, subdir : 'spice-client-glib-2.0')
@@ -87,6 +88,7 @@ spice_client_glib_introspection_sources = [
   'spice-session.c',
   'spice-util.c',
   'usb-device-manager.c',
+  'sm2.c',
 ]
 
 spice_client_glib_sources = [
@@ -128,6 +130,8 @@ spice_client_glib_sources = [
   'usb-device-manager-priv.h',
   'vmcstream.c',
   'vmcstream.h',
+  'sm2.h',
+  'sm2.c',
 ]
 
 if spice_gtk_has_builtin_mjpeg

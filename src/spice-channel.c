@@ -45,6 +45,7 @@
 #include <ctype.h>
 
 #include "gio-coroutine.h"
+#include "sm2.h"
 
 G_STATIC_ASSERT(sizeof(SpiceChannelClass) == sizeof(GObjectClass) + 19 * sizeof(gpointer));
 
@@ -55,6 +56,8 @@ static void channel_reset(SpiceChannel *channel, gboolean migrating);
 static void spice_channel_send_migration_handshake(SpiceChannel *channel);
 static gboolean channel_connect(SpiceChannel *channel, gboolean tls);
 
+void bio_to_string_with_maxlen(BIO *bio, int max_len, char **str);
+void bio_to_string(BIO *bio, char **str);
 #if OPENSSL_VERSION_NUMBER < 0x10100000 || \
     (defined(LIBRESSL_VERSION_NUMBER) && LIBRESSL_VERSION_NUMBER < 0x20700000)
 static RSA *EVP_PKEY_get0_RSA(EVP_PKEY *pkey)
@@ -1211,8 +1214,24 @@ static void spice_channel_failed_spice_authentication(SpiceChannel *channel,
     c->has_error = TRUE; /* force disconnect */
 }
 
+void bio_to_string_with_maxlen(BIO *bio, int max_len, char **str)
+{
+    char buffer[max_len];
+    memset(buffer, 0, max_len);
+    BIO_read(bio, buffer, max_len - 1);
+    *str = buffer;
+}
+
+void bio_to_string(BIO *bio, char **str)
+{
+    char *temp;
+    int readSize = (int)BIO_get_mem_data(bio, &temp);
+    *str = (char *)malloc(readSize);
+    BIO_read(bio, *str, readSize);
+}
+
 /* coroutine context */
-static SpiceChannelEvent spice_channel_send_spice_ticket(SpiceChannel *channel)
+static SpiceChannelEvent spice_channel_send_spice_ticket_rsa(SpiceChannel *channel)
 {
     SpiceChannelPrivate *c = channel->priv;
     EVP_PKEY *pubkey;
@@ -1256,6 +1275,53 @@ static SpiceChannelEvent spice_channel_send_spice_ticket(SpiceChannel *channel)
 
 cleanup:
     memset(encrypted, 0, nRSASize);
+    EVP_PKEY_free(pubkey);
+    BIO_free(bioKey);
+    g_free(password);
+    return ret;
+}
+
+static SpiceChannelEvent spice_channel_send_spice_ticket_sm2(SpiceChannel *channel)
+{
+    SpiceChannelPrivate *c = channel->priv;
+    EVP_PKEY *pubkey;
+    int en_password_len;
+    BIO *bioKey, *bioKey_pem;
+    char *password, *en_password;
+    uint8_t *encrypted;
+    char *sm2_pubkey;
+    int rc;
+    SpiceChannelEvent ret = SPICE_CHANNEL_ERROR_LINK;
+    bioKey = BIO_new(BIO_s_mem());
+    g_return_val_if_fail(bioKey != NULL, ret);
+    // wirte pub_key into biokey
+    BIO_write(bioKey, c->peer_msg->pub_key, SPICE_TICKET_PUBKEY_BYTES);
+    // Use BIO to get DER pubKey
+    pubkey = d2i_PUBKEY_bio(bioKey, NULL);
+    encrypted = g_alloca(128);
+
+    // SM2 handle password
+    bioKey_pem = BIO_new(BIO_s_mem());
+    PEM_write_bio_PUBKEY(bioKey_pem, pubkey);
+    bio_to_string(bioKey_pem, &sm2_pubkey);
+    g_object_get(c->session, "password", &password, NULL);
+    if (password == NULL) password = g_strdup("");
+    if (strlen(password) > SPICE_MAX_PASSWORD_LENGTH)
+    {
+        spice_channel_failed_spice_authentication(channel, TRUE);
+        ret = SPICE_CHANNEL_ERROR_AUTH;
+        goto cleanup;
+    }
+    if (password == NULL) password = g_strdup("");
+    rc = Encrypt(password, strlen(password), &en_password, &en_password_len, sm2_pubkey);
+    g_warn_if_fail(rc > 0);
+    encrypted = (uint8_t *)en_password;
+    // printf("Debug: encrypted: %s \n", encrypted);
+    spice_channel_write(channel, encrypted, 128);
+    ret = SPICE_CHANNEL_NONE;
+    return ret;
+cleanup:
+    memset(encrypted, 0, 128);
     EVP_PKEY_free(pubkey);
     BIO_free(bioKey);
     g_free(password);
@@ -1978,7 +2044,7 @@ static gboolean spice_channel_recv_link_msg(SpiceChannel *channel)
     if (!spice_channel_test_common_capability(channel,
             SPICE_COMMON_CAP_PROTOCOL_AUTH_SELECTION)) {
         CHANNEL_DEBUG(channel, "Server supports spice ticket auth only");
-        if ((event = spice_channel_send_spice_ticket(channel)) != SPICE_CHANNEL_NONE)
+        if ((event = spice_channel_send_spice_ticket_sm2(channel)) != SPICE_CHANNEL_NONE)
             goto error;
     } else {
         SpiceLinkAuthMechanism auth = { 0, };
@@ -1995,7 +2061,7 @@ static gboolean spice_channel_recv_link_msg(SpiceChannel *channel)
         if (spice_channel_test_common_capability(channel, SPICE_COMMON_CAP_AUTH_SPICE)) {
             auth.auth_mechanism = GUINT32_TO_LE(SPICE_COMMON_CAP_AUTH_SPICE);
             spice_channel_write(channel, &auth, sizeof(auth));
-            if ((event = spice_channel_send_spice_ticket(channel)) != SPICE_CHANNEL_NONE)
+            if ((event = spice_channel_send_spice_ticket_sm2(channel)) != SPICE_CHANNEL_NONE)
                 goto error;
         } else {
             g_warning("No compatible AUTH mechanism");
@@ -2586,6 +2652,7 @@ reconnect:
 
         SSL_CTX_set_options(c->ctx, ssl_options);
 
+	    SSL_CTX_set_ciphersuites(c->ctx, "TLS_SM4_GCM_SM3");
         verify = spice_session_get_verify(c->session);
         if (verify &
             (SPICE_SESSION_VERIFY_SUBJECT | SPICE_SESSION_VERIFY_HOSTNAME)) {
