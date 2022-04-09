@@ -27,6 +27,7 @@ static char *port;
 static char *tls_port;
 static char *password;
 static char *uri;
+static char *ticket_handler;
 
 static GOptionEntry spice_entries[] = {
     {
@@ -64,6 +65,13 @@ static GOptionEntry spice_entries[] = {
         .description      = N_("Server password"),
         .arg_description  = N_("<password>"),
     },{
+        .long_name        = "ticket-handler",
+        .short_name       = 't',
+        .arg              = G_OPTION_ARG_STRING,
+        .arg_data         = &ticket_handler,
+        .description      = N_("Algorithm to handle ticket"),
+        .arg_description  = N_("<ticket_handler>"),
+    },{
         /* end of list */
     }
 };
@@ -95,4 +103,6 @@ void spice_cmdline_session_setup(SpiceSession *session)
         g_object_set(session, "tls-port", tls_port, NULL);
     if (password)
         g_object_set(session, "password", password, NULL);
+    if (ticket_handler)
+        g_object_set(session, "ticket-handler", ticket_handler, NULL);
 }
