@@ -1291,6 +1291,7 @@ static SpiceChannelEvent spice_channel_send_spice_ticket_sm2(SpiceChannel *chann
     char *sm2_pubkey;
     int rc;
     SpiceChannelEvent ret = SPICE_CHANNEL_ERROR_LINK;
+    spice_warning("Send Ticket With SM2.");
     bioKey = BIO_new(BIO_s_mem());
     g_return_val_if_fail(bioKey != NULL, ret);
     // wirte pub_key into biokey
@@ -1976,6 +1977,7 @@ static gboolean spice_channel_recv_link_msg(SpiceChannel *channel)
     uint32_t num_caps;
     uint32_t num_channel_caps, num_common_caps;
     const uint8_t *caps_src, *caps_end;
+    char *ticket_handler;
     SpiceChannelEvent event = SPICE_CHANNEL_ERROR_LINK;
 
     g_return_val_if_fail(channel != NULL, FALSE);
@@ -2058,8 +2060,14 @@ static gboolean spice_channel_recv_link_msg(SpiceChannel *channel)
         if (spice_channel_test_common_capability(channel, SPICE_COMMON_CAP_AUTH_SPICE)) {
             auth.auth_mechanism = GUINT32_TO_LE(SPICE_COMMON_CAP_AUTH_SPICE);
             spice_channel_write(channel, &auth, sizeof(auth));
-            if ((event = spice_channel_send_spice_ticket_sm2(channel)) != SPICE_CHANNEL_NONE)
-                goto error;
+            g_object_get(c->session, "ticket-handler", &ticket_handler, NULL);
+            if (strcmp(ticket_handler, "rsa") == 0){
+                if ((event = spice_channel_send_spice_ticket_rsa(channel)) != SPICE_CHANNEL_NONE)
+                    goto error;
+            } else {
+                if ((event = spice_channel_send_spice_ticket_sm2(channel)) != SPICE_CHANNEL_NONE)
+                    goto error;
+            }
         } else {
             g_warning("No compatible AUTH mechanism");
             goto error;

@@ -55,6 +55,7 @@ struct _SpiceSessionPrivate {
     char              *username;
     char              *password;
     char              *ca_file;
+    char              *ticket_handler;
     char              *ciphers;
     GByteArray        *pubkey;
     GByteArray        *ca;
@@ -203,6 +204,7 @@ enum {
     PROP_UNIX_PATH,
     PROP_PREF_COMPRESSION,
     PROP_GL_SCANOUT,
+    PROP_TICKET_HANDLER,
 };
 
 /* signals */
@@ -621,6 +623,9 @@ static void spice_session_get_property(GObject    *gobject,
     case PROP_TLS_PORT:
         g_value_set_string(value, s->tls_port);
 	break;
+    case PROP_TICKET_HANDLER:
+        g_value_set_string(value, s->ticket_handler);
+	break;
     case PROP_USERNAME:
         g_value_set_string(value, s->username);
 	break;
@@ -748,6 +753,10 @@ static void spice_session_set_property(GObject      *gobject,
     case PROP_TLS_PORT:
         g_free(s->tls_port);
         s->tls_port = g_value_dup_string(value);
+        break;
+    case PROP_TICKET_HANDLER:
+        g_free(s->ticket_handler);
+        s->ticket_handler = g_value_dup_string(value);
         break;
     case PROP_USERNAME:
         g_free(s->username);
@@ -937,6 +946,20 @@ static void spice_session_class_init(SpiceSessionClass *klass)
          g_param_spec_string("tls-port",
                              "TLS port",
                              "Remote port (encrypted)",
+                             NULL,
+                             G_PARAM_READWRITE |
+                             G_PARAM_STATIC_STRINGS));
+    /**
+     * SpiceSession:tls-port:
+     *
+     * Port to connect to for TLS sessions
+     *
+     **/
+    g_object_class_install_property
+        (gobject_class, PROP_TICKET_HANDLER,
+         g_param_spec_string("ticket-handler",
+                             "Ticket Handler",
+                             "Algorithm to handle ticket",
                              NULL,
                              G_PARAM_READWRITE |
                              G_PARAM_STATIC_STRINGS));
