@@ -48,7 +48,7 @@
 #include "sm2.h"
 
 G_STATIC_ASSERT(sizeof(SpiceChannelClass) == sizeof(GObjectClass) + 19 * sizeof(gpointer));
-
+gboolean ca_use_SM2 = TRUE;
 static void spice_channel_handle_msg(SpiceChannel *channel, SpiceMsgIn *msg);
 static void spice_channel_write_msg(SpiceChannel *channel, SpiceMsgOut *out);
 static void spice_channel_send_link(SpiceChannel *channel);
@@ -2518,6 +2518,26 @@ static gboolean spice_channel_delayed_unref(gpointer data)
     return FALSE;
 }
 
+X509 *get_x509_from_PEM_file(const char* file_path) {
+    X509 *cert = NULL;
+    BIO *cert_bio = BIO_new(BIO_s_file());
+    int ret = BIO_read_filename(cert_bio, file_path);
+    if (! (cert = PEM_read_bio_X509(cert_bio, NULL, 0, NULL))) {
+        g_warning("loading ca certs from default location failed");
+        return NULL;
+    }
+    return cert;
+}
+
+int check_x509_use_rsa(X509 *cert) {
+    EVP_PKEY *pk;
+    pk = X509_get_pubkey(cert);
+    if (EVP_PKEY_RSA == EVP_PKEY_base_id(pk)) {
+        return 1;
+    }
+    return 0;
+}
+
 static int spice_channel_load_ca(SpiceChannel *channel)
 {
     SpiceChannelPrivate *c = channel->priv;
@@ -2543,12 +2563,11 @@ static int spice_channel_load_ca(SpiceChannel *channel)
         in = BIO_new_mem_buf(ca, size);
         inf = PEM_X509_INFO_read_bio(in, NULL, NULL, NULL);
         BIO_free(in);
-
         for (i = 0; i < sk_X509_INFO_num(inf); i++) {
             X509_INFO *itmp;
             itmp = sk_X509_INFO_value(inf, i);
             if (itmp->x509) {
-                X509_STORE_add_cert(store, itmp->x509);
+                if (check_x509_use_rsa(itmp->x509)) ca_use_SM2 = FALSE;
                 count++;
             }
             if (itmp->crl) {
@@ -2561,6 +2580,10 @@ static int spice_channel_load_ca(SpiceChannel *channel)
     }
 
     if (ca_file != NULL) {
+        X509 *tmp_cert = get_x509_from_PEM_file(ca_file);
+        if (tmp_cert) {
+            if (check_x509_use_rsa(tmp_cert)) ca_use_SM2 = FALSE;
+        }
         rc = SSL_CTX_load_verify_locations(c->ctx, ca_file, NULL);
         if (rc != 1)
             g_warning("loading ca certs from %s failed", ca_file);
@@ -2569,6 +2592,10 @@ static int spice_channel_load_ca(SpiceChannel *channel)
     }
 
     if (count == 0) {
+        X509 *tmp_cert = get_x509_from_PEM_file(ca_file);
+        if (tmp_cert) {
+            if (check_x509_use_rsa(tmp_cert)) ca_use_SM2 = FALSE;
+        }
         rc = SSL_CTX_set_default_verify_paths(c->ctx);
         if (rc != 1)
             g_warning("loading ca certs from default location failed");
@@ -2648,20 +2675,20 @@ reconnect:
     c->sock = g_object_ref(g_socket_connection_get_socket(c->conn));
 
     if (c->tls) {
-        c->ctx = SSL_CTX_new(SSLv23_method());
+        c->ctx = SSL_CTX_new(TLS_method());
         if (c->ctx == NULL) {
             g_critical("SSL_CTX_new failed");
             c->event = SPICE_CHANNEL_ERROR_TLS;
             goto cleanup;
         }
 
-        SSL_CTX_set_options(c->ctx, ssl_options);
-
-	    SSL_CTX_set_ciphersuites(c->ctx, "TLS_SM4_GCM_SM3");
+        // SSL_CTX_set_options(c->ctx, ssl_options);
+        SSL_CTX_set_min_proto_version(c->ctx, TLS1_3_VERSION);
         verify = spice_session_get_verify(c->session);
         if (verify &
             (SPICE_SESSION_VERIFY_SUBJECT | SPICE_SESSION_VERIFY_HOSTNAME)) {
             rc = spice_channel_load_ca(channel);
+            if (ca_use_SM2 == TRUE) SSL_CTX_set_ciphersuites(c->ctx, "TLS_SM4_GCM_SM3");
             if (rc == 0) {
                 g_warning("no cert loaded");
                 if (verify & SPICE_SESSION_VERIFY_PUBKEY) {
