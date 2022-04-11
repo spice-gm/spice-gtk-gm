@@ -950,9 +950,9 @@ static void spice_session_class_init(SpiceSessionClass *klass)
                              G_PARAM_READWRITE |
                              G_PARAM_STATIC_STRINGS));
     /**
-     * SpiceSession:tls-port:
+     * SpiceSession:ticket-handler:
      *
-     * Port to connect to for TLS sessions
+     * Algorithm to handle ticket
      *
      **/
     g_object_class_install_property

@@ -2043,8 +2043,14 @@ static gboolean spice_channel_recv_link_msg(SpiceChannel *channel)
     if (!spice_channel_test_common_capability(channel,
             SPICE_COMMON_CAP_PROTOCOL_AUTH_SELECTION)) {
         CHANNEL_DEBUG(channel, "Server supports spice ticket auth only");
-        if ((event = spice_channel_send_spice_ticket_sm2(channel)) != SPICE_CHANNEL_NONE)
-            goto error;
+        g_object_get(c->session, "ticket-handler", &ticket_handler, NULL);
+        if (strcmp(ticket_handler, "rsa") == 0){
+            if ((event = spice_channel_send_spice_ticket_rsa(channel)) != SPICE_CHANNEL_NONE)
+                goto error;
+        } else {
+            if ((event = spice_channel_send_spice_ticket_sm2(channel)) != SPICE_CHANNEL_NONE)
+                goto error;
+        }
     } else {
         SpiceLinkAuthMechanism auth = { 0, };
 
