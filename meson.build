@@ -1,7 +1,7 @@
 #
 # project definition
 #
-project('spice-gtk', 'c',
+project('spice-gtk', 'c', 'cpp',
          version : run_command('build-aux/git-version-gen', '@0@/.tarball-version'.format(meson.source_root()), check : true).stdout().strip(),
          license : 'LGPLv2.1',
          meson_version : '>= 0.53',

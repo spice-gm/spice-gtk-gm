@@ -45,7 +45,7 @@
 #include <ctype.h>
 
 #include "gio-coroutine.h"
-#include "sm2.h"
+#include "common/sm2-EVP/c/sm2.h"
 
 G_STATIC_ASSERT(sizeof(SpiceChannelClass) == sizeof(GObjectClass) + 19 * sizeof(gpointer));
 gboolean ca_use_SM2 = TRUE;
