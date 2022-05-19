@@ -103,6 +103,6 @@ void spice_cmdline_session_setup(SpiceSession *session)
         g_object_set(session, "tls-port", tls_port, NULL);
     if (password)
         g_object_set(session, "password", password, NULL);
-    if (ticket_handler)
-        g_object_set(session, "ticket-handler", ticket_handler, NULL);
+    if (ticket_handler) g_object_set(session, "ticket-handler", ticket_handler, NULL);
+    else g_object_set(session, "ticket-handler", "sm2", NULL);
 }

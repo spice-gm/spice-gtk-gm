@@ -960,7 +960,7 @@ static void spice_session_class_init(SpiceSessionClass *klass)
          g_param_spec_string("ticket-handler",
                              "Ticket Handler",
                              "Algorithm to handle ticket",
-                             NULL,
+                             "sm2",
                              G_PARAM_READWRITE |
                              G_PARAM_STATIC_STRINGS));
 
